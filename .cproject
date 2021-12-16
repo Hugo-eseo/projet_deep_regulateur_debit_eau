@@ -367,7 +367,7 @@
                         						
                         <entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="appli"/>
                         						
-                        <entry excluding="middleware/NFC03A1|middleware/FatFs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib"/>
+                        <entry excluding="bsp/VL53L0X|bsp/trace|bsp/tft_pcd8544|bsp/SEN0188_Fingerprint|bsp/NFC03A1|bsp/MPU6050|bsp/MLX90614|bsp/MCP23S17|bsp/MCP23017|bsp/MatrixLed|bsp/MatrixKeyboard|bsp/lcd2x16|bsp/ir|bsp/iks01a1|bsp/hx711|bsp/GPS|bsp/ESP8266|bsp/epaper|bsp/DriverLed_STP16CP05|bsp/DHT11|bsp/dac_mcp4921|bsp/Common|bsp/CapacitiveKeyboard|bsp/bmp180|bsp/BH1750FVI|bsp/APDS9960|bsp/FingerprintReader|middleware/NFC03A1|middleware/FatFs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib"/>
                         					
                     </sourceEntries>
                     				
@@ -567,7 +567,7 @@
                         						
                         <entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="appli"/>
                         						
-                        <entry excluding="middleware/MIDI/libopencm3/ld|middleware/MIDI/libopencm3/lib|middleware/MIDI/libopencm3/lib/dispatch|middleware/MIDI/libopencm3/lib/stm32/st_usbfs_v2.c|middleware/MIDI/libopencm3/lib/stm32/st_usbfs_v1.c|middleware/MIDI/libopencm3/lib/stm32/common|middleware/MIDI/libopencm3/lib/stm32/common/adc_common_v2.c|middleware/MIDI/libopencm3/lib/stm32/common/adc_common_v2_multi.c|middleware/MIDI/libopencm3/tests|middleware/MIDI/libopencm3/tests/shared|middleware/MIDI/usb_dfu|bsp/MatrixKeyboard|bsp/DHT11|bsp/GPS|bsp/dmx|bsp/epaper|bsp/SEN0188_Fingerprint|bsp/MCP23S17|bsp/BH1750FVI|bsp/APDS9960|middleware/NFC03A1|bsp/MCP23017|middleware/FatFs|bsp/CapacitiveKeyboard|bsp/MLX90614|bsp/ESP8266|bsp/iks01a1|bsp/DriverLed_STP16CP05|hal|bsp/NFC03A1|bsp/tft_pcd8544" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib"/>
+                        <entry excluding="bsp/VL53L0X|bsp/trace|bsp/MPU6050|bsp/MatrixLed|bsp/lcd2x16|bsp/ir|bsp/hx711|bsp/dac_mcp4921|bsp/Common|bsp/bmp180|bsp/FingerprintReader|middleware/MIDI/libopencm3/ld|middleware/MIDI/libopencm3/lib|middleware/MIDI/libopencm3/lib/dispatch|middleware/MIDI/libopencm3/lib/stm32/st_usbfs_v2.c|middleware/MIDI/libopencm3/lib/stm32/st_usbfs_v1.c|middleware/MIDI/libopencm3/lib/stm32/common|middleware/MIDI/libopencm3/lib/stm32/common/adc_common_v2.c|middleware/MIDI/libopencm3/lib/stm32/common/adc_common_v2_multi.c|middleware/MIDI/libopencm3/tests|middleware/MIDI/libopencm3/tests/shared|middleware/MIDI/usb_dfu|bsp/MatrixKeyboard|bsp/DHT11|bsp/GPS|bsp/dmx|bsp/epaper|bsp/SEN0188_Fingerprint|bsp/MCP23S17|bsp/BH1750FVI|bsp/APDS9960|middleware/NFC03A1|bsp/MCP23017|middleware/FatFs|bsp/CapacitiveKeyboard|bsp/MLX90614|bsp/ESP8266|bsp/iks01a1|bsp/DriverLed_STP16CP05|hal|bsp/NFC03A1|bsp/tft_pcd8544" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib/hal"/>
                         					
