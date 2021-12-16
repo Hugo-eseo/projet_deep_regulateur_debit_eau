@@ -1,4 +1,7 @@
+"appli/debimetre.o"
 "appli/main.o"
+"appli/tft.o"
+"appli/vanne.o"
 "lib/bsp/HC-SR04/HCSR04.o"
 "lib/bsp/stm32f1_adc.o"
 "lib/bsp/stm32f1_extit.o"

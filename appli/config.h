@@ -45,6 +45,14 @@
 #define PCB_BUTTON_GPIO		GPIOB
 #define PCB_BUTTON_PIN		GPIO_PIN_12
 
+// Brachements de la vanne
+#define VANNE_GPIO		GPIOA
+#define VANNE_PIN		GPIO_PIN_0
+
+// Brachements du debimetre
+#define DEBIMETRE_LED_GPIO		GPIOB
+#define DEBIMETRE_LED_PIN		GPIO_PIN_1
+
 //Choisir les broches pour l'UART1, parmi ces deux possibilités :
 #define UART1_ON_PB6_PB7
 //#define UART1_ON_PA9_PA10

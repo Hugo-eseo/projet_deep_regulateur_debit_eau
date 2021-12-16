@@ -1,0 +1,26 @@
+/*
+ * vanne.c
+ *
+ *  Created on: 16 déc. 2021
+ *      Author: hugob
+ */
+
+#include "vanne.h"
+#include "config.h"
+
+void VANNE_init(void){
+	//Initialisation du port de la vanne
+	BSP_GPIO_PinCfg(VANNE_GPIO, VANNE_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
+}
+
+void VANNE_open(void){
+	HAL_GPIO_WritePin(VANNE_GPIO, VANNE_PIN, 1);
+}
+
+void VANNE_close(void){
+	HAL_GPIO_WritePin(VANNE_GPIO, VANNE_PIN, 0);
+}
+
+void VANNE_switch_position(void){
+	HAL_GPIO_TogglePin(VANNE_GPIO, VANNE_PIN);
+}

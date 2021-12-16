@@ -53,3 +53,5 @@ dkms.conf
 *.mk
 *.list
 *.bin
+*.list
+*.mk
