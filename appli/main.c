@@ -31,6 +31,7 @@ void process_ms(void)
 }
 
 
+
 int main(void)
 {
 	//Initialisation de la couche logicielle HAL (Hardware Abstraction Layer)
@@ -43,8 +44,10 @@ int main(void)
 		//Ces broches sont redirig�es vers la sonde de d�bogage, la liaison UART �tant ensuite encapsul�e sur l'USB vers le PC de d�veloppement.
 	UART_init(UART2_ID,115200);
 
+	UART_init(UART1_ID, 9600);
+
 	//"Indique que les printf sortent vers le p�riph�rique UART2."
-	SYS_set_std_usart(UART2_ID, UART2_ID, UART2_ID);
+	SYS_set_std_usart(UART1_ID, UART1_ID, UART1_ID);
 
 	//Initialisation du port de la led Verte (carte Nucleo)
 	BSP_GPIO_PinCfg(LED_GREEN_GPIO, LED_GREEN_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
@@ -56,11 +59,11 @@ int main(void)
 	Systick_add_callback_function(&process_ms);
 
 	//MAIN A
-
 	while(1)	//boucle de t�che de fond
 	{
 		if(!t)
 		{
+			UART_puts(UART1_ID, "test ; ",5);
 			t = 200;
 			HAL_GPIO_TogglePin(LED_GREEN_GPIO, LED_GREEN_PIN);
 		}

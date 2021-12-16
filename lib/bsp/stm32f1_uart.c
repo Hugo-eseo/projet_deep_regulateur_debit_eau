@@ -15,63 +15,63 @@
 #include <string.h>
 
 /*
- * Ce module logiciel permet l'utilisation des périphériques USART (Universal Synchronous/Asynchronous Receiver Transmitter)
+ * Ce module logiciel permet l'utilisation des pï¿½riphï¿½riques USART (Universal Synchronous/Asynchronous Receiver Transmitter)
  *
- * 	Un module UART permet d'envoyer des données (i.e. des octets) sur une "liaison série", c'est à dire sur un fil.
- * 	Les octets ainsi envoyés sont découpés en bits. Chaque bit est envoyé pendant une période fixée.
+ * 	Un module UART permet d'envoyer des donnï¿½es (i.e. des octets) sur une "liaison sï¿½rie", c'est ï¿½ dire sur un fil.
+ * 	Les octets ainsi envoyï¿½s sont dï¿½coupï¿½s en bits. Chaque bit est envoyï¿½ pendant une pï¿½riode fixï¿½e.
  *
- * 	Selon l'UART choisi, les broches correspondantes sont initialisées et réservé pour cet usage :
+ * 	Selon l'UART choisi, les broches correspondantes sont initialisï¿½es et rï¿½servï¿½ pour cet usage :
  * 		(des 'defines' permettent pour chaque USART de choisir de remapper ou non les ports Rx et Tx)
  * 	USART1 : Rx=PA10 et Tx=PA9 		ou avec remap : Rx=PB7 et Tx=PB6
  * 	USART2 : Rx=PA3 et Tx=PA2 		ou avec remap : Rx=PD6 et Tx=PD5
  * 	USART3 : Rx=PB11 et Tx=PB10 	ou avec remap : Rx=PD9 et Tx=PD8
  *
- * 	On parle de liaison série asynchrone lorsqu'aucune horloge n'accompagne la donnée pour indiquer à celui qui la reçoit l'instant où le bit est transmis.
- * 	Dans ces conditions, il faut impérativement que le récepteur sâche à quelle vitesse précise les données sont transmises.
+ * 	On parle de liaison sï¿½rie asynchrone lorsqu'aucune horloge n'accompagne la donnï¿½e pour indiquer ï¿½ celui qui la reï¿½oit l'instant oï¿½ le bit est transmis.
+ * 	Dans ces conditions, il faut impï¿½rativement que le rï¿½cepteur sï¿½che ï¿½ quelle vitesse prï¿½cise les donnï¿½es sont transmises.
  * 	Il "prend alors en photo" chaque bit, et reconstitue les octets.
  *
- * 	Au repos, la tension de la liaison série est à l'état logique '1'.
- * 	Pour chaque octets (8 bits) à envoyer, l'UART envoie en fait 10 bits :
- * 		1 bit de start (toujours à 0), 8 bits de données, 1 bit de stop (toujours à 1).
- * 	Ce passage par 0 avant l'envoi des données permet au récepteur de comprendre que l'on va transmettre un octet.
- * 		(sinon il ne saurait détecter le début d'un octet commencant par le bit '1' !)
+ * 	Au repos, la tension de la liaison sï¿½rie est ï¿½ l'ï¿½tat logique '1'.
+ * 	Pour chaque octets (8 bits) ï¿½ envoyer, l'UART envoie en fait 10 bits :
+ * 		1 bit de start (toujours ï¿½ 0), 8 bits de donnï¿½es, 1 bit de stop (toujours ï¿½ 1).
+ * 	Ce passage par 0 avant l'envoi des donnï¿½es permet au rï¿½cepteur de comprendre que l'on va transmettre un octet.
+ * 		(sinon il ne saurait dï¿½tecter le dï¿½but d'un octet commencant par le bit '1' !)
  *
  * 	Voici un exemple d'utilisation de ce module logiciel.
  *
- * 	si on souhaite initialiser l'UART1, à une vitesse de 115200 bits par seconde, puis envoyer et recevoir des données sur cette liaison.
- *  Un exemple est également disponible dans la fonction UART_test()
+ * 	si on souhaite initialiser l'UART1, ï¿½ une vitesse de 115200 bits par seconde, puis envoyer et recevoir des donnï¿½es sur cette liaison.
+ *  Un exemple est ï¿½galement disponible dans la fonction UART_test()
  *
  * 	1-> Appeler la fonction UART_init(UART1_ID, 115200);
  * 	2-> Pour envoyer un octet 'A' sur l'UART1 : UART_putc(UART1_ID, 'A');
- * 	3-> Pour recevoir les octets qui auraient été reçus par l'UART1 :
+ * 	3-> Pour recevoir les octets qui auraient ï¿½tï¿½ reï¿½us par l'UART1 :
  * 			if(UART_data_ready(UART1_ID))
  * 			{
  * 				uint8_t c;
  * 				c = UART_get_next_byte(UART1_ID);
- * 				//On peut faire ce qu'on souhaite avec l'octet c récupéré.
+ * 				//On peut faire ce qu'on souhaite avec l'octet c rï¿½cupï¿½rï¿½.
  * 			}
- * 		Les octets reçus par les périphériques UART initialisés sont traités dans une routine d'interruption, puis mémorisés dans un tableau (que l'on nomme un buffer),
- * 		jusqu'à l'appel à la fonction UART_get_next_byte().
- * 		Ce tableau peut mémoriser 128 octets. (BUFFER_RX_SIZE)
- * 		Cette méthode permet au processeur de ne pas louper des données arrivant sur ce périphérique pendant qu'il est occupé à autre chose dans le programme.
- * 		Il est simplement interrompu très brièvement pour conserver l'octet reçu, et remettre à plus tard son traitement.
+ * 		Les octets reï¿½us par les pï¿½riphï¿½riques UART initialisï¿½s sont traitï¿½s dans une routine d'interruption, puis mï¿½morisï¿½s dans un tableau (que l'on nomme un buffer),
+ * 		jusqu'ï¿½ l'appel ï¿½ la fonction UART_get_next_byte().
+ * 		Ce tableau peut mï¿½moriser 128 octets. (BUFFER_RX_SIZE)
+ * 		Cette mï¿½thode permet au processeur de ne pas louper des donnï¿½es arrivant sur ce pï¿½riphï¿½rique pendant qu'il est occupï¿½ ï¿½ autre chose dans le programme.
+ * 		Il est simplement interrompu trï¿½s briï¿½vement pour conserver l'octet reï¿½u, et remettre ï¿½ plus tard son traitement.
  *
- * 	4-> Il est également possible de profiter de la richesse proposée par la fonction printf...
- * 		qui permet d'envoyer un texte 'variable', constitué avec une chaine de format et des paramètres.
+ * 	4-> Il est ï¿½galement possible de profiter de la richesse proposï¿½e par la fonction printf...
+ * 		qui permet d'envoyer un texte 'variable', constituï¿½ avec une chaine de format et des paramï¿½tres.
  * 			Pour cela :
  * 			Appelez au moins une fois, lors de l'initialisation, la fonction
- * 				SYS_set_std_usart(UART1_ID, UART1_ID, UART1_ID);   //indique qu'il faut utiliser l'UART1 pour sortir les données du printf.
+ * 				SYS_set_std_usart(UART1_ID, UART1_ID, UART1_ID);   //indique qu'il faut utiliser l'UART1 pour sortir les donnï¿½es du printf.
  * 			Puis :
- * 				uint32_t millivolt = 3245;	//une façon éléguante d'exprimer le nombre 3,245 Volts
- * 				printf("Bonjour le monde, voici un joli nombre à virgule : %d,%03d V\n", millivolt/1000, millivolt%1000);
+ * 				uint32_t millivolt = 3245;	//une faï¿½on ï¿½lï¿½guante d'exprimer le nombre 3,245 Volts
+ * 				printf("Bonjour le monde, voici un joli nombre ï¿½ virgule : %d,%03d V\n", millivolt/1000, millivolt%1000);
  *
  */
 
-//Les buffers de réception accumulent les données reçues, dans la limite de leur taille.
-//Les emplacement occupés par les octets reçus sont libérés dès qu'on les consulte.
+//Les buffers de rï¿½ception accumulent les donnï¿½es reï¿½ues, dans la limite de leur taille.
+//Les emplacement occupï¿½s par les octets reï¿½us sont libï¿½rï¿½s dï¿½s qu'on les consulte.
 #define BUFFER_RX_SIZE	128
 
-static UART_HandleTypeDef UART_HandleStructure[UART_ID_NB];	//Ce tableau contient les structures qui sont utilisées pour piloter chaque UART avec la librairie HAL.
+static UART_HandleTypeDef UART_HandleStructure[UART_ID_NB];	//Ce tableau contient les structures qui sont utilisï¿½es pour piloter chaque UART avec la librairie HAL.
 static const USART_TypeDef * instance_array[UART_ID_NB] = {USART1, USART2, USART3};
 static const IRQn_Type nvic_irq_array[UART_ID_NB] = {USART1_IRQn, USART2_IRQn, USART3_IRQn};
 
@@ -84,8 +84,8 @@ static volatile bool_e uart_initialized[UART_ID_NB] = {FALSE};
 
 
 /*
- * Cette fonction blocante a pour but de vous aider à appréhender les fonctionnalités de ce module logiciel.
- * Complètement inutile, cette fonction accumule les octets reçus dans un tableau, puis les renvoie sur l'UART dès qu'un caractère '\n' est reçu.
+ * Cette fonction blocante a pour but de vous aider ï¿½ apprï¿½hender les fonctionnalitï¿½s de ce module logiciel.
+ * Complï¿½tement inutile, cette fonction accumule les octets reï¿½us dans un tableau, puis les renvoie sur l'UART dï¿½s qu'un caractï¿½re '\n' est reï¿½u.
  */
 void UART_demo(void)
 {
@@ -98,17 +98,17 @@ void UART_demo(void)
 	{
 		if(UART_data_ready(UART2_ID))
 		{
-			c = UART_getc(UART2_ID);			//lecture du prochain caractère
-			tab[index] = c;						//On mémorise le caractère dans le tableau
+			c = UART_getc(UART2_ID);			//lecture du prochain caractï¿½re
+			tab[index] = c;						//On mï¿½morise le caractï¿½re dans le tableau
 			if(c=='\n')							//Si c'est la fin de la chaine
 			{
-				tab[index+1] = 0; 				//fin de chaine, en écrasant le caractère suivant par un 0
-				UART_puts(UART2_ID, tab, 0);	//on renvoie la chaine reçue.
-				index = 0;						//Remise à zéro de l'index
+				tab[index+1] = 0; 				//fin de chaine, en ï¿½crasant le caractï¿½re suivant par un 0
+				UART_puts(UART2_ID, tab, 0);	//on renvoie la chaine reï¿½ue.
+				index = 0;						//Remise ï¿½ zï¿½ro de l'index
 			}
 			else if(index < DEMO_TAB_SIZE - 2)
-			{									//Pour tout caractère différent de \n
-				index++;						//on incrémente l'index (si < TAB_SIZE -2 !)
+			{									//Pour tout caractï¿½re diffï¿½rent de \n
+				index++;						//on incrï¿½mente l'index (si < TAB_SIZE -2 !)
 			}
 		}
 	}
@@ -116,15 +116,15 @@ void UART_demo(void)
 
 
 /**
- * @brief	Initialise l'USARTx - 8N1 - vitesse des bits (baudrate) indiqué en paramètre
+ * @brief	Initialise l'USARTx - 8N1 - vitesse des bits (baudrate) indiquï¿½ en paramï¿½tre
  * @func	void UART_init(uint8_t uart_id, uart_interrupt_mode_e mode)
- * @param	uart_id est le numéro de l'UART concerné :
+ * @param	uart_id est le numï¿½ro de l'UART concernï¿½ :
  * 				UART1_ID
  * 				UART2_ID
  * 				UART3_ID
  * @param	baudrate indique la vitesse en baud/sec
- * 				115200	vitesse proposée par défaut
- * 				9600	vitesse couramment utilisée
+ * 				115200	vitesse proposï¿½e par dï¿½faut
+ * 				9600	vitesse couramment utilisï¿½e
  * 				19200	...
  * @post	Cette fonction initialise les broches suivante selon l'USART choisit en parametre :
  * 				USART1 : Rx=PA10 et Tx=PA9 		ou avec remap : Rx=PB7 et Tx=PB6
@@ -164,10 +164,10 @@ void UART_init(uart_id_e uart_id, uint32_t baudrate)
 	/*Activation de l'UART */
 	__HAL_UART_ENABLE(&UART_HandleStructure[uart_id]);
 
-	// On fixe les priorités des interruptions de l'usart PreemptionPriority = 0, SubPriority = 1 et on autorise les interruptions
+	// On fixe les prioritï¿½s des interruptions de l'usart PreemptionPriority = 0, SubPriority = 1 et on autorise les interruptions
 	HAL_NVIC_SetPriority(nvic_irq_array[uart_id] , 1, 1);
 	HAL_NVIC_EnableIRQ(nvic_irq_array[uart_id]);
-	HAL_UART_Receive_IT(&UART_HandleStructure[uart_id],&buffer_rx[uart_id][buffer_rx_write_index[uart_id]],1);	//Activation de la réception d'un caractère
+	HAL_UART_Receive_IT(&UART_HandleStructure[uart_id],&buffer_rx[uart_id][buffer_rx_write_index[uart_id]],1);	//Activation de la rï¿½ception d'un caractï¿½re
 
 	//Config LibC: no buffering
 	setvbuf(stdout, NULL, _IONBF, 0 );
@@ -179,8 +179,8 @@ void UART_init(uart_id_e uart_id, uint32_t baudrate)
 
 
 /*
- * @brief	Déinitialise l'USARTx
- * @param	uart_id est le numéro de l'UART concerné :	UART1_ID, UART2_ID, UART3_ID
+ * @brief	Dï¿½initialise l'USARTx
+ * @param	uart_id est le numï¿½ro de l'UART concernï¿½ :	UART1_ID, UART2_ID, UART3_ID
  */
 void UART_DeInit(uart_id_e uart_id)
 {
@@ -190,10 +190,10 @@ void UART_DeInit(uart_id_e uart_id)
 }
 
 /*
- * @brief	Fonction permettant de savoir si le buffer de l'UART demandé est vide ou non.
- * @ret		Retourne VRAI si un ou des caractères sont disponibles dans le buffer.
- * @ret		Retourne FAUX si aucun caractère n'est disponible dans le buffer (le buffer est vide)
- * @param	uart_id est le numéro de l'UART concerné :	UART1_ID, UART2_ID, UART3_ID
+ * @brief	Fonction permettant de savoir si le buffer de l'UART demandï¿½ est vide ou non.
+ * @ret		Retourne VRAI si un ou des caractï¿½res sont disponibles dans le buffer.
+ * @ret		Retourne FAUX si aucun caractï¿½re n'est disponible dans le buffer (le buffer est vide)
+ * @param	uart_id est le numï¿½ro de l'UART concernï¿½ :	UART1_ID, UART2_ID, UART3_ID
  */
 bool_e UART_data_ready(uart_id_e uart_id)
 {
@@ -202,22 +202,22 @@ bool_e UART_data_ready(uart_id_e uart_id)
 }
 
 /*
- * @brief	Fonction permettant de récupérer le prochain caractère reçu dans le buffer.
- * @ret 	Retourne le prochain caractère reçu. Ou 0 si rien n'a été reçu.
- * @post 	Le caractère renvoyé par cette fonction ne sera plus renvoyé.
+ * @brief	Fonction permettant de rï¿½cupï¿½rer le prochain caractï¿½re reï¿½u dans le buffer.
+ * @ret 	Retourne le prochain caractï¿½re reï¿½u. Ou 0 si rien n'a ï¿½tï¿½ reï¿½u.
+ * @post 	Le caractï¿½re renvoyï¿½ par cette fonction ne sera plus renvoyï¿½.
  */
 uint8_t UART_get_next_byte(uart_id_e uart_id)
 {
 	uint8_t ret;
 	assert(uart_id < UART_ID_NB);
 
-	if(!buffer_rx_data_ready[uart_id])	//N'est jamais sensé se produire si l'utilisateur vérifie que UART_data_ready() avant d'appeler UART_get_next_byte()
+	if(!buffer_rx_data_ready[uart_id])	//N'est jamais sensï¿½ se produire si l'utilisateur vï¿½rifie que UART_data_ready() avant d'appeler UART_get_next_byte()
 		return 0;
 
 	ret =  buffer_rx[uart_id][buffer_rx_read_index[uart_id]];
 	buffer_rx_read_index[uart_id] = (buffer_rx_read_index[uart_id] + 1) % BUFFER_RX_SIZE;
 
-	//Section critique durant laquelle on désactive les interruptions... pour éviter une mauvaise préemption.
+	//Section critique durant laquelle on dï¿½sactive les interruptions... pour ï¿½viter une mauvaise prï¿½emption.
 	NVIC_DisableIRQ(nvic_irq_array[uart_id]);
 	if (buffer_rx_write_index[uart_id] == buffer_rx_read_index[uart_id])
 		buffer_rx_data_ready[uart_id] = FALSE;
@@ -228,10 +228,10 @@ uint8_t UART_get_next_byte(uart_id_e uart_id)
 
 /**
  * @func 	char UART_getc(uart_id_e uart_id))
- * @brief	Fonction NON blocante qui retourne le dernier caractere reçu sur l'USARTx. Ou 0 si pas de caractere reçu.
+ * @brief	Fonction NON blocante qui retourne le dernier caractere reï¿½u sur l'USARTx. Ou 0 si pas de caractere reï¿½u.
  * @param	UART_Handle : UART_Handle.Instance = USART1, USART2 ou USART6
- * @post	Si le caractere reçu est 0, il n'est pas possible de faire la difference avec le cas où aucun caractere n'est reçu.
- * @ret		Le caractere reçu, sur 8 bits.
+ * @post	Si le caractere reï¿½u est 0, il n'est pas possible de faire la difference avec le cas oï¿½ aucun caractere n'est reï¿½u.
+ * @ret		Le caractere reï¿½u, sur 8 bits.
  */
 uint8_t UART_getc(uart_id_e uart_id)
 {
@@ -240,11 +240,11 @@ uint8_t UART_getc(uart_id_e uart_id)
 
 /**
  * @func 	char UART_getc_blocking(uart_id_e uart_id, uint32_t timeout))
- * @brief	Fonction blocante !! qui retourne le dernier caractere reçu sur l'USARTx. Ou 0 si pas de caractere reçu au delà du timeout
+ * @brief	Fonction blocante !! qui retourne le dernier caractere reï¿½u sur l'USARTx. Ou 0 si pas de caractere reï¿½u au delï¿½ du timeout
  * @param	UART_Handle : UART_Handle.Instance = USART1, USART2 ou USART6
- * @param	timeout au delà duquel on abandonne le blocage, sauf si timeout vaut 0 (attente infinie)
- * @post	Si le caractere reçu est 0, il n'est pas possible de faire la difference avec le cas où aucun caractere n'est reçu.
- * @ret		Le caractere reçu, sur 8 bits.
+ * @param	timeout au delï¿½ duquel on abandonne le blocage, sauf si timeout vaut 0 (attente infinie)
+ * @post	Si le caractere reï¿½u est 0, il n'est pas possible de faire la difference avec le cas oï¿½ aucun caractere n'est reï¿½u.
+ * @ret		Le caractere reï¿½u, sur 8 bits.
  */
 uint8_t UART_getc_blocking(uart_id_e uart_id, uint32_t timeout)
 {
@@ -264,9 +264,9 @@ uint8_t UART_getc_blocking(uart_id_e uart_id, uint32_t timeout)
 
 /*
  * @func
- * @brief	Lit "len" caractères reçus, s'ils existent...
- * @post	Fonction non blocante : s'il n'y a plus de caractère reçu, cette fonction renvoit la main
- * @ret		Le nombre de caractères lus.
+ * @brief	Lit "len" caractï¿½res reï¿½us, s'ils existent...
+ * @post	Fonction non blocante : s'il n'y a plus de caractï¿½re reï¿½u, cette fonction renvoit la main
+ * @ret		Le nombre de caractï¿½res lus.
  */
 uint32_t UART_gets(uart_id_e uart_id, uint8_t * datas, uint32_t len)
 {
@@ -283,11 +283,11 @@ uint32_t UART_gets(uart_id_e uart_id, uint8_t * datas, uint32_t len)
 
 /**
  * @func 	uint32_t UART_gets_blocking(uart_id_e uart_id, uint8_t * datas, uint32_t len, uint32_t timeout)
- * @brief	Fonction blocante !! qui retourne "len" caracteres reçus sur l'USARTx
- * @param	les caractères reçus sont rangés dans le buffer datas.
+ * @brief	Fonction blocante !! qui retourne "len" caracteres reï¿½us sur l'USARTx
+ * @param	les caractï¿½res reï¿½us sont rangï¿½s dans le buffer datas.
  * @param	UART_Handle : UART_Handle.Instance = USART1, USART2 ou USART6
- * @param	timeout au delà duquel on abandonne le blocage, sauf si timeout vaut 0 (attente infinie)
- * @ret		Le nombre de caracteres reçus
+ * @param	timeout au delï¿½ duquel on abandonne le blocage, sauf si timeout vaut 0 (attente infinie)
+ * @ret		Le nombre de caracteres reï¿½us
  */
 uint32_t UART_gets_blocking(uart_id_e uart_id, uint8_t * datas, uint32_t len, uint32_t timeout)
 {
@@ -329,7 +329,7 @@ void UART_putc(uart_id_e uart_id, uint8_t c)
 /**
  * @brief	Envoi une chaine de caractere sur l'USARTx. Fonction BLOCANTE si un caractere est deja en cours d'envoi.
  * @func 	void UART_putc(UART_HandleTypeDef * UART_Handle, char c)
- * @param	str : la chaine de caractère à envoyer
+ * @param	str : la chaine de caractï¿½re ï¿½ envoyer
  * @param	USARTx : USART1, USART2 ou USART6
  */
 void UART_puts(uart_id_e uart_id, uint8_t * str, uint32_t len)
@@ -354,7 +354,7 @@ void UART_puts(uart_id_e uart_id, uint8_t * str, uint32_t len)
 	}
 }
 
-//ecriture impolie forcée bloquante sur l'UART (à utiliser en IT, en cas d'extrême recours)
+//ecriture impolie forcï¿½e bloquante sur l'UART (ï¿½ utiliser en IT, en cas d'extrï¿½me recours)
 void UART_impolite_force_puts_on_uart(uart_id_e uart_id, uint8_t * str, uint32_t len)
 {
 	uint32_t i;
@@ -370,7 +370,7 @@ void UART_impolite_force_puts_on_uart(uart_id_e uart_id, uint8_t * str, uint32_t
 	}
 }
 /*
- * @brief Fonction blocante qui présente un exemple d'utilisation de ce module logiciel.
+ * @brief Fonction blocante qui prï¿½sente un exemple d'utilisation de ce module logiciel.
  */
 void UART_test(void)
 {
@@ -383,19 +383,19 @@ void UART_test(void)
 		if(UART_data_ready(UART1_ID))
 		{
 			c = UART_get_next_byte(UART1_ID);
-			UART_putc(UART1_ID,c);					//Echo du caractère reçu sur l'UART 1.
+			UART_putc(UART1_ID,c);					//Echo du caractï¿½re reï¿½u sur l'UART 1.
 		}
 
 		if(UART_data_ready(UART2_ID))
 		{
 			c = UART_get_next_byte(UART2_ID);
-			UART_putc(UART2_ID,c);					//Echo du caractère reçu sur l'UART 2.
+			UART_putc(UART2_ID,c);					//Echo du caractï¿½re reï¿½u sur l'UART 2.
 		}
 
 		if(UART_data_ready(UART3_ID))
 		{
 			c = UART_get_next_byte(UART3_ID);
-			UART_putc(UART3_ID,c);					//Echo du caractère reçu sur l'UART 3.
+			UART_putc(UART3_ID,c);					//Echo du caractï¿½re reï¿½u sur l'UART 3.
 		}
 	}
 }
@@ -420,9 +420,9 @@ void USART3_IRQHandler(void)
 
 
 /*
- * @brief	Cette fonction est appelée en interruption UART par le module HAL_UART.
- * @post	L'octet reçu est rangé dans le buffer correspondant.
- * @post	La réception en IT du prochain octet est ré-activée.
+ * @brief	Cette fonction est appelï¿½e en interruption UART par le module HAL_UART.
+ * @post	L'octet reï¿½u est rangï¿½ dans le buffer correspondant.
+ * @post	La rï¿½ception en IT du prochain octet est rï¿½-activï¿½e.
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -433,14 +433,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	else return;
 
 	buffer_rx_data_ready[uart_id] = TRUE;	//Le buffer n'est pas (ou plus) vide.
-	buffer_rx_write_index[uart_id] = (uint8_t)((buffer_rx_write_index[uart_id] + 1) % BUFFER_RX_SIZE);						//Déplacement pointeur en écriture
-	HAL_UART_Receive_IT(&UART_HandleStructure[uart_id],&buffer_rx[uart_id][buffer_rx_write_index[uart_id]],1);	//Réactivation de la réception d'un caractère
+	buffer_rx_write_index[uart_id] = (uint8_t)((buffer_rx_write_index[uart_id] + 1) % BUFFER_RX_SIZE);						//Dï¿½placement pointeur en ï¿½criture
+	HAL_UART_Receive_IT(&UART_HandleStructure[uart_id],&buffer_rx[uart_id][buffer_rx_write_index[uart_id]],1);	//Rï¿½activation de la rï¿½ception d'un caractï¿½re
 }
 
 /*
- * @brief	Cette fonction est appelée par la fonction d'initialisation HAL_UART_Init().
- * 			Selon le numéro de l'UART, on y defini la configuration des broches correspondantes (voir la doc)
- * @param	huart: uart handler utilisé
+ * @brief	Cette fonction est appelï¿½e par la fonction d'initialisation HAL_UART_Init().
+ * 			Selon le numï¿½ro de l'UART, on y defini la configuration des broches correspondantes (voir la doc)
+ * @param	huart: uart handler utilisï¿½
  */
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {

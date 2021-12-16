@@ -77,34 +77,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := projet-f103
+BUILD_ARTIFACT_NAME := projet_deep_regulateur_debit_eau
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX := 
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME).$(BUILD_ARTIFACT_EXTENSION)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-projet-f103.elf \
+projet_deep_regulateur_debit_eau.elf \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-projet-f103.list \
+projet_deep_regulateur_debit_eau.list \
 
 OBJCOPY_BIN += \
-projet-f103.bin \
+projet_deep_regulateur_debit_eau.bin \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: projet-f103.elf secondary-outputs
+main-build: projet_deep_regulateur_debit_eau.elf secondary-outputs
 
 # Tool invocations
-projet-f103.elf: $(OBJS) $(USER_OBJS) ..\lib\LinkerScript.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "projet-f103.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"..\lib\LinkerScript.ld" -Wl,-Map="projet-f103.map" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+projet_deep_regulateur_debit_eau.elf: $(OBJS) $(USER_OBJS) ..\lib\LinkerScript.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "projet_deep_regulateur_debit_eau.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"..\lib\LinkerScript.ld" -Wl,-Map="projet_deep_regulateur_debit_eau.map" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -113,13 +113,13 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-projet-f103.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "projet-f103.list"
+projet_deep_regulateur_debit_eau.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "projet_deep_regulateur_debit_eau.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-projet-f103.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "projet-f103.bin"
+projet_deep_regulateur_debit_eau.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "projet_deep_regulateur_debit_eau.bin"
 	@echo 'Finished building: $@'
 	@echo ' '
 
