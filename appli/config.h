@@ -52,6 +52,8 @@
 // Brachements du debimetre
 #define DEBIMETRE_LED_GPIO		GPIOB
 #define DEBIMETRE_LED_PIN		GPIO_PIN_1
+#define DEBIMETRE_READER_GPIO	GPIOB
+#define DEBIMETRE_READER_PIN	GPIO_PIN_10
 
 //Choisir les broches pour l'UART1, parmi ces deux possibilités :
 #define UART1_ON_PB6_PB7

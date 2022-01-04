@@ -25,22 +25,29 @@ bool_e readButton(void)
 {
 	return !HAL_GPIO_ReadPin(BLUE_BUTTON_GPIO, BLUE_BUTTON_PIN);
 }
-static volatile bool_e flag_10ms = FALSE;
-static volatile uint32_t t = 0;
+
+// {BUTTON_READING, TFT_UPDATE}
+static volatile bool_e flags[2] = {FALSE, FALSE};
+static volatile uint16_t timer[2] = {0, 0};
+static const uint16_t TIMER_VALUE = {10, 500};
+
+static typedef enum
+{
+	WAIT,
+	BUTTON_READING,
+	TFT_UPDATE
+}state_machine_id;
+
 void process_ms(void)
 {
-	static uint8_t t10 = 0;
-	if(t)
-		t--;
-
-	if(t10)
-	{
-		t10--;
-	}
-	else
-	{
-		flag_10ms = TRUE;
-		t10=10;
+	for(int i=0; i<sizeof(timer); i++){
+		if(timer[i]){
+			timer[i]--;
+		}
+		else{
+			flags[i] = TRUE;
+			timer[i] = TIMER_VALUE[i];
+		}
 	}
 }
 
@@ -55,8 +62,6 @@ bool_e button_press_event(void)
 	previous_state = current_state;
 	return ret;
 }
-
-
 
 int main(void)
 {
@@ -76,13 +81,13 @@ int main(void)
 	//Initialisation du port de la led Verte (carte Nucleo)
 	BSP_GPIO_PinCfg(LED_GREEN_GPIO, LED_GREEN_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
 
-	//Initialisation du port de la led PCB rouge (carte Nucleo)
+	//Initialisation du port de la led PCB rouge
 	BSP_GPIO_PinCfg(LED_PCB_RED_GPIO, LED_PCB_RED_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
 
 	//Initialisation du port du bouton bleu (carte Nucleo)
 	BSP_GPIO_PinCfg(BLUE_BUTTON_GPIO, BLUE_BUTTON_PIN, GPIO_MODE_INPUT,GPIO_PULLUP,GPIO_SPEED_FREQ_HIGH);
 
-	//Initialisation du port du bouton bleu (carte Nucleo)
+	//Initialisation du port du bouton du PCB
 	BSP_GPIO_PinCfg(PCB_BUTTON_GPIO, PCB_BUTTON_PIN, GPIO_MODE_INPUT,GPIO_PULLUP,GPIO_SPEED_FREQ_HIGH);
 
 	//On ajoute la fonction process_ms à la liste des fonctions appelées automatiquement chaque ms par la routine d'interruption du périphérique SYSTICK
@@ -94,8 +99,6 @@ int main(void)
 	// Initialisation de la vanne
 	VANNE_init();
 
-	VANNE_open();
-
 	// Initialisation du débimètre
 	DEBIMETRE_init();
 
@@ -103,20 +106,36 @@ int main(void)
 
 	while(1)	//boucle de tâche de fond
 	{
-		if(!t)
-		{
-			t = 200;
-			HAL_GPIO_TogglePin(LED_GREEN_GPIO, LED_GREEN_PIN);
-		}
-		if(flag_10ms)
-		{
-			flag_10ms = FALSE;
-
-			//lire le bouton !
-			if(button_press_event()){
-				HAL_GPIO_TogglePin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN);
-				VANNE_switch_position();
-			}
+		switch(state_machine_id){
+			case WAIT:
+				// La lecture du bouton est prioritaire sur la mise à jour de l'écran
+				if(flags[0]){
+					state = BUTTON_READING;
+				}
+				else if(flags[1]){
+					state = TFT_UPDATE;
+				}
+				break;
+			// Lecture du boutton toutes les 10 ms
+			case BUTTON_READING:
+				// Acquittement du flag
+				flags[0] = FALSE;
+				// Lecture du bouton
+				if(button_press_event()){
+					HAL_GPIO_TogglePin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN);
+					VANNE_switch_position();
+				}
+				state = WAIT;
+				break;
+			// Mise à jour de l'écran toutes les 500 ms
+			case TFT_UPDATE:
+				// Acquittement du flag
+				flags[1] = FALSE;
+				// A compléter
+				state = WAIT;
+				break;
+			default:
+				break;
 		}
 	}
 }
