@@ -251,6 +251,7 @@ const static int16_t TFT_img[] = {
 
 void TFT_init(void){
 	ILI9341_Init();
+	ILI9341_Rotate(ILI9341_Orientation_Landscape_2);
 	ILI9341_Fill(ILI9341_COLOR_WHITE);
 	/*ILI9341_DrawCircle(20,20,5,ILI9341_COLOR_BLUE);
 	ILI9341_DrawLine(20,20,100,20,ILI9341_COLOR_RED);
@@ -260,4 +261,35 @@ void TFT_init(void){
 	ILI9341_Puts(200,200, "chaine", &Font_11x18, ILI9341_COLOR_BROWN,
 	ILI9341_COLOR_WHITE);*/
 	ILI9341_putImage(20, 20, 64, 59, TFT_img, 64*59);
+}
+
+void TFT_update_info(void){
+	// Récupère de débit d'eau courant
+	static uint16_t flow[2] = {0, 1};
+	static uint16_t consumption[2] = {0, 1};
+
+	flow[0] = DEBIMETRE_get_flow();
+	char tab_flow[5];
+	sprintf(tab_flow, "%d", DEBIMETRE_get_flow());
+
+	// Récupère la quantité d'eau consommée
+	consumption[0] = DEBIMETRE_get_consumption();
+	char tab_consumption[10];
+	sprintf(tab_consumption, "%d", DEBIMETRE_get_consumption());
+
+	// Affiche le débit d'eau courant
+	if(flow[0] != flow[1]){
+		ILI9341_INT_Fill(262, 100, 317, 118, ILI9341_COLOR_WHITE);
+		ILI9341_Puts(20, 100, "Debit d'eau courant : ", &Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_WHITE);
+		ILI9341_Puts(262, 100, &tab_flow[0], &Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_WHITE);
+		flow[1] = flow[0];
+	}
+
+	// Affiche la quantité d'eau consommée
+	if(consumption[0] != consumption[1]){
+		ILI9341_INT_Fill(207, 136, 317, 154, ILI9341_COLOR_WHITE);
+		ILI9341_Puts(20, 136, "Eau consommee : ", &Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_WHITE);
+		ILI9341_Puts(207, 136, &tab_consumption[0], &Font_11x18, ILI9341_COLOR_BLACK, ILI9341_COLOR_WHITE);
+		consumption[1] = consumption[0];
+	}
 }

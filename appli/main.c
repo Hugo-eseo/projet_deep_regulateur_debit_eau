@@ -15,6 +15,7 @@
 
 #include "tft.h"
 #include "vanne.h"
+#include "debimetre.h"
 
 void writeLED(bool_e b)
 {
@@ -26,12 +27,13 @@ bool_e readButton(void)
 	return !HAL_GPIO_ReadPin(BLUE_BUTTON_GPIO, BLUE_BUTTON_PIN);
 }
 
+#define TIMER_AMOUT 2
 // {BUTTON_READING, TFT_UPDATE}
-static volatile bool_e flags[2] = {FALSE, FALSE};
-static volatile uint16_t timer[2] = {0, 0};
-static const uint16_t TIMER_VALUE = {10, 500};
+static volatile bool_e flags[TIMER_AMOUT] = {FALSE, FALSE};
+static volatile uint16_t timer[TIMER_AMOUT] = {0, 0};
+static const uint16_t TIMER_VALUE[TIMER_AMOUT] = {10, 500};
 
-static typedef enum
+typedef enum
 {
 	WAIT,
 	BUTTON_READING,
@@ -40,7 +42,7 @@ static typedef enum
 
 void process_ms(void)
 {
-	for(int i=0; i<sizeof(timer); i++){
+	for(uint i=0; i<TIMER_AMOUT; i++){
 		if(timer[i]){
 			timer[i]--;
 		}
@@ -102,11 +104,12 @@ int main(void)
 	// Initialisation du débimètre
 	DEBIMETRE_init();
 
-	//HAL_GPIO_WritePin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN, 1);
+	state_machine_id state = WAIT;
+	//static uint16_t previous_flow = 0;
 
 	while(1)	//boucle de tâche de fond
 	{
-		switch(state_machine_id){
+		switch(state){
 			case WAIT:
 				// La lecture du bouton est prioritaire sur la mise à jour de l'écran
 				if(flags[0]){
@@ -131,7 +134,14 @@ int main(void)
 			case TFT_UPDATE:
 				// Acquittement du flag
 				flags[1] = FALSE;
-				// A compléter
+				TFT_update_info();
+
+				// Si le débitmètre est inactif, on set la valeur du débit courant à 0
+				if(!DEBIMETRE_get_flag()){
+					DEBIMETRE_set_flow(0);
+				}
+				DEBIMETRE_set_flag(FALSE);
+
 				state = WAIT;
 				break;
 			default:

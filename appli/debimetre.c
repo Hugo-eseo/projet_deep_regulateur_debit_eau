@@ -16,8 +16,9 @@ static void DEBIMETRE_timer_start(void);
 static uint16_t DEBIMETRE_timer_stop(void);
 static void DEBIMETRE_calculation(uint16_t time);
 
-static uint16_t DEBIMETRE_flow; // En mililitre/mins
-static uint32_t DEBIMETRE_consumption; //En mililitre, 4M L max avant overflow
+static uint16_t DEBIMETRE_flow = 0; // En mililitre/mins
+static uint32_t DEBIMETRE_consumption = 0; //En mililitre, 4M L max avant overflow
+static bool_e DEBIMETRE_flag = FALSE; //Flag pour la remise à 0 lorsque le capteur est inactif
 
 typedef enum
 {
@@ -28,6 +29,18 @@ typedef enum
 // Accesseurs
 uint16_t DEBIMETRE_get_flow(void){
 	return(DEBIMETRE_flow);
+}
+
+void DEBIMETRE_set_flow(uint16_t flow){
+	DEBIMETRE_flow = flow;
+}
+
+bool_e DEBIMETRE_get_flag(void){
+	return(DEBIMETRE_flag);
+}
+
+void DEBIMETRE_set_flag(bool_e flag){
+	DEBIMETRE_flag = flag;
 }
 
 uint32_t DEBIMETRE_get_consumption(void){
@@ -42,7 +55,7 @@ void DEBIMETRE_init(void){
 	//Autorise le périphérique GPIO à lever une requête d'interruption
 	BSP_GPIO_PinCfg(DEBIMETRE_READER_GPIO, DEBIMETRE_READER_PIN, GPIO_MODE_IT_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_HIGH);
 	//Autorise la demande d'interruption correspondante à interrompre le processeur
-	uint8_t pin_number = EXTI_gpiopin_to_pin_number(DEBIMETRE_READER_GPIO);
+	uint8_t pin_number = EXTI_gpiopin_to_pin_number(DEBIMETRE_READER_PIN);
 	EXTIT_enable(pin_number);
 	//Definition de la fonction de callback
 	EXTIT_set_callback(DEBIMETRE_handler, pin_number, TRUE);
@@ -50,10 +63,10 @@ void DEBIMETRE_init(void){
 
 void DEBIMETRE_handler(void){
 	static state_machine_id state = WAIT;
-	static uint16_t time;
 	static uint8_t pulse = 0;
 	uint16_t period = 0;
-	// L'aquitement du flag d'interruption est effectute en amont
+	// L'aquitement du flag d'interruption est effectute en amont, celui-ci est utilié pour la ràz en cas d'inactivité
+	DEBIMETRE_flag = TRUE;
 
 	switch(state)
 	{
@@ -67,9 +80,9 @@ void DEBIMETRE_handler(void){
 			pulse ++;
 			state = WAIT;
 
-			if(pulse == 23){
+			if(pulse == 9){
 				pulse = 0;
-				DEBIMETRE_consumption += 50;
+				DEBIMETRE_consumption += 2;
 			}
 			break;
 		default:
@@ -87,7 +100,7 @@ static uint16_t DEBIMETRE_timer_stop(void){
 	return TIMER_read(TIMER);
 }
 
-static void DEBIMETRE_calculation(uint16_t time){
+static void DEBIMETRE_calculation(uint16_t period){
 	// Calcul du débit et mise à jour du pointeur du main
-	DEBIMETRE_flow = uint16_t (time*3.25); // En mililitre/mins
+	DEBIMETRE_flow = (period*5/144) - (400/9); // En mililitre/mins
 }
