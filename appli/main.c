@@ -126,6 +126,7 @@ int main(void)
 				// Lecture du bouton
 				if(button_press_event()){
 					HAL_GPIO_TogglePin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN);
+					HAL_GPIO_TogglePin(LED_GREEN_GPIO, LED_GREEN_PIN);
 					VANNE_switch_position();
 				}
 				state = WAIT;
