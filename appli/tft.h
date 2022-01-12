@@ -8,6 +8,10 @@
 #ifndef TFT_H_
 #define TFT_H_
 
+#include "macro_types.h"
+
 void TFT_init(void);
+
+const int16_t TFT_img[];
 
 #endif /* TFT_H_ */

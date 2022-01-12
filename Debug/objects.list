@@ -1,4 +1,5 @@
 "appli/debimetre.o"
+"appli/image.o"
 "appli/main.o"
 "appli/tft.o"
 "appli/vanne.o"
