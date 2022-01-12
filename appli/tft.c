@@ -139,11 +139,16 @@ static uint16_t TFT_get_sentence_size(uint8_t line_number, uint8_t sentence_orde
 }
 
 // A terminer !
-/*
-static void TFT_delete_sentence(void){
-	// A compléter
-}
 
+static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
+	line * line_ref = &screen_display[line_number];
+	sentence * sentence_ref = &line_ref->sentences[sentence_order];
+	for(i=sentence_order; i<line_ref->sentences_amount; i++){
+		// A compléter
+	}
+	line_ref->sentences_amount -= 1;
+}
+/*
 static void TFT_delete_line(void){
 	// A compléter
 }*/
