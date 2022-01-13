@@ -55,3 +55,11 @@ dkms.conf
 *.bin
 *.list
 *.mk
+.settings/language.settings.xml
+*.mk
+Debug/makefile
+*.list
+*.cfg
+*.launch
+*.prefs
+*.xml
