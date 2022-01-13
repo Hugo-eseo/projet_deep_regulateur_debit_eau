@@ -37,6 +37,24 @@
 	#define BLUE_BUTTON_PIN 	GPIO_PIN_15		//Pas de bouton sur la bluepill, choisissez le port souhaité si vous en reliez un.
 #endif
 
+// LED temoin sur le PCB
+#define LED_PCB_RED_GPIO	GPIOA
+#define LED_PCB_RED_PIN		GPIO_PIN_1
+
+// Bouton d'arrêt d'urgence de la valve
+#define PCB_BUTTON_GPIO		GPIOB
+#define PCB_BUTTON_PIN		GPIO_PIN_12
+
+// Brachements de la vanne
+#define VANNE_GPIO		GPIOA
+#define VANNE_PIN		GPIO_PIN_0
+
+// Brachements du debimetre
+#define DEBIMETRE_LED_GPIO		GPIOB
+#define DEBIMETRE_LED_PIN		GPIO_PIN_1
+#define DEBIMETRE_READER_GPIO	GPIOB
+#define DEBIMETRE_READER_PIN	GPIO_PIN_10
+
 //Choisir les broches pour l'UART1, parmi ces deux possibilités :
 #define UART1_ON_PB6_PB7
 //#define UART1_ON_PA9_PA10
@@ -91,11 +109,11 @@
 	#define USE_AN17		1	//Vref
 
 
-#define USE_SCREEN_TFT_ILI9341		0	//Ecran TFT 2.4
+#define USE_SCREEN_TFT_ILI9341		1	//Ecran TFT 2.4
 	#if USE_SCREEN_TFT_ILI9341
 		#define USE_XPT2046			1	//Tactile
 
-		#define USE_FONT11x18		0
+		#define USE_FONT11x18		1
 		#define USE_FONT7x10		1
 		#define USE_FONT16x26		0
 	#endif
