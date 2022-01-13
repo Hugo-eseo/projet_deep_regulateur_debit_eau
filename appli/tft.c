@@ -293,10 +293,48 @@ void TFT_init(void){
 
 }
 
+/*
+ * @brief Switch le texte indiquant l'état de la vanne
+ * @param state : TRUE = OUVERTE, FALSE = FERMEE
+ */
 void TFT_set_vanne(bool_e state){
 	uint16_t color = state?ILI9341_COLOR_GREEN:ILI9341_COLOR_RED;
 	char * text = state?"OUVERTE":"FERMEE";
 	TFT_edit_sentence(2, 1, color, &text[0]);
+	TFT_update_screen();
+}
+
+/*
+ * @brief Switch le texte indiquant l'état de la connexion
+ * @param state : TRUE = ON, FALSE = OFF
+ */
+void TFT_set_connexion(bool_e state){
+	uint16_t color = state?ILI9341_COLOR_GREEN:ILI9341_COLOR_RED;
+	char * text = state?"ON":"OFF";
+	TFT_edit_sentence(3, 1, color, &text[0]);
+	TFT_update_screen();
+}
+
+/*
+ * @brief Modifie le texte indiquant le type de douche choisie
+ * @param state : 0 = DIEUX, 1 = NORMALE, autre = ECOLOGIQUE
+ */
+void TFT_set_shower(int state){
+	uint16_t color;
+	char * text;
+	if(state==0){
+		color = ILI9341_COLOR_RED;
+		text = "DIEUX";
+	}
+	else if(state==1){
+		color = ILI9341_COLOR_BLUE2;
+		text = "NORMALE";
+	}
+	else{
+		color = ILI9341_COLOR_GREEN;
+		text = "ECOLOGIQUE";
+	}
+	TFT_edit_sentence(7, 1, color, &text[0]);
 	TFT_update_screen();
 }
 
