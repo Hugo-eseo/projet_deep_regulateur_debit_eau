@@ -1,3 +1,4 @@
+"appli/bluetooth.o"
 "appli/main.o"
 "lib/bsp/APDS9960/apds9960.o"
 "lib/bsp/BH1750FVI/bh1750fvi.o"
