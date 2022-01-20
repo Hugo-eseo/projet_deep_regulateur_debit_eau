@@ -55,6 +55,10 @@
 #define DEBIMETRE_READER_GPIO	GPIOB
 #define DEBIMETRE_READER_PIN	GPIO_PIN_10
 
+// Branchement de l'UART
+#define BLUETOOTH_GPIO			GPIOA
+#define BLUETOOTH_PIN			GPIO_PIN_3
+
 //Choisir les broches pour l'UART1, parmi ces deux possibilit�s :
 //#define UART1_ON_PB6_PB7
 #define UART1_ON_PA9_PA10
