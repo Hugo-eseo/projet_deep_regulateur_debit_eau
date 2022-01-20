@@ -18,6 +18,7 @@ RM := rm -rf
 -include lib/bsp/subdir.mk
 -include lib/subdir.mk
 -include appli/subdir.mk
+-include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -42,8 +43,8 @@ $(wildcard ../makefile.targets) \
 
 BUILD_ARTIFACT_NAME := projet_deep_regulateur_debit_eau
 BUILD_ARTIFACT_EXTENSION := elf
-BUILD_ARTIFACT_PREFIX :=
-BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
+BUILD_ARTIFACT_PREFIX := 
+BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME).$(BUILD_ARTIFACT_EXTENSION)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
@@ -67,7 +68,7 @@ main-build: projet_deep_regulateur_debit_eau.elf secondary-outputs
 
 # Tool invocations
 projet_deep_regulateur_debit_eau.elf: $(OBJS) $(USER_OBJS) /Users/hugobouy/Documents/STM32_respertory/projet_deep_regulateur_debit_eau/lib/LinkerScript.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "projet_deep_regulateur_debit_eau.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/hugobouy/Documents/STM32_respertory/projet_deep_regulateur_debit_eau/lib/LinkerScript.ld" -Wl,-Map="projet_deep_regulateur_debit_eau.map" -Wl,--gc-sections -static -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "projet_deep_regulateur_debit_eau.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/hugobouy/Documents/STM32_respertory/projet_deep_regulateur_debit_eau/lib/LinkerScript.ld" -Wl,-Map="projet_deep_regulateur_debit_eau.map" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -88,7 +89,7 @@ projet_deep_regulateur_debit_eau.bin: $(EXECUTABLES) makefile objects.list $(OPT
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout projet_deep_regulateur_debit_eau.bin projet_deep_regulateur_debit_eau.elf projet_deep_regulateur_debit_eau.list
+	-$(RM) *
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
@@ -100,6 +101,7 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
+.SECONDARY:
 
 -include ../makefile.targets

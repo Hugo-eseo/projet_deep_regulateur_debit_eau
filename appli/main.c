@@ -16,6 +16,7 @@
 #include "tft.h"
 #include "vanne.h"
 #include "debimetre.h"
+#include "bluetooth.h"
 
 void writeLED(bool_e b)
 {
@@ -53,7 +54,7 @@ void process_ms(void)
 	}
 }
 
-//Détecteur d'appui sur un bouton
+//Dï¿½tecteur d'appui sur un bouton
 bool_e button_press_event(void)
 {
 	static bool_e previous_state = FALSE;
@@ -68,17 +69,17 @@ bool_e button_press_event(void)
 int main(void)
 {
 	//Initialisation de la couche logicielle HAL (Hardware Abstraction Layer)
-	//Cette ligne doit rester la première étape de la fonction main().
+	//Cette ligne doit rester la premiï¿½re ï¿½tape de la fonction main().
 	HAL_Init();
 
 
-	//Initialisation de l'UART2 à la vitesse de 115200 bauds/secondes (92kbits/s) PA2 : Tx  | PA3 : Rx.
-		//Attention, les pins PA2 et PA3 ne sont pas reliées jusqu'au connecteur de la Nucleo.
-		//Ces broches sont redirigées vers la sonde de débogage, la liaison UART étant ensuite encapsulée sur l'USB vers le PC de développement.
-	UART_init(UART2_ID,115200);
+	//Initialisation de l'UART2 ï¿½ la vitesse de 115200 bauds/secondes (92kbits/s) PA2 : Tx  | PA3 : Rx.
+		//Attention, les pins PA2 et PA3 ne sont pas reliï¿½es jusqu'au connecteur de la Nucleo.
+		//Ces broches sont redirigï¿½es vers la sonde de dï¿½bogage, la liaison UART ï¿½tant ensuite encapsulï¿½e sur l'USB vers le PC de dï¿½veloppement.
+	UART_init(UART1_ID,9600);
 
-	//"Indique que les printf sortent vers le périphérique UART2."
-	SYS_set_std_usart(UART2_ID, UART2_ID, UART2_ID);
+	//"Indique que les printf sortent vers le pï¿½riphï¿½rique UART2."
+	//SYS_set_std_usart(UART2_ID, UART2_ID, UART2_ID);
 
 	//Initialisation du port de la led Verte (carte Nucleo)
 	BSP_GPIO_PinCfg(LED_GREEN_GPIO, LED_GREEN_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
@@ -92,26 +93,27 @@ int main(void)
 	//Initialisation du port du bouton du PCB
 	BSP_GPIO_PinCfg(PCB_BUTTON_GPIO, PCB_BUTTON_PIN, GPIO_MODE_INPUT,GPIO_PULLUP,GPIO_SPEED_FREQ_HIGH);
 
-	//On ajoute la fonction process_ms à la liste des fonctions appelées automatiquement chaque ms par la routine d'interruption du périphérique SYSTICK
+	//On ajoute la fonction process_ms ï¿½ la liste des fonctions appelï¿½es automatiquement chaque ms par la routine d'interruption du pï¿½riphï¿½rique SYSTICK
 	Systick_add_callback_function(&process_ms);
 
-	// Initialisation de l'écran TFT
+	// Initialisation de l'ï¿½cran TFT
 	TFT_init();
 
 	// Initialisation de la vanne
 	VANNE_init();
 
-	// Initialisation du débimètre
+	// Initialisation du dï¿½bimï¿½tre
 	DEBIMETRE_init();
 
 	state_machine_id state = WAIT;
 	//static uint16_t previous_flow = 0;
 
-	while(1)	//boucle de tâche de fond
+	while(1)	//boucle de tï¿½che de fond
 	{
+		get_data();
 		switch(state){
 			case WAIT:
-				// La lecture du bouton est prioritaire sur la mise à jour de l'écran
+				// La lecture du bouton est prioritaire sur la mise ï¿½ jour de l'ï¿½cran
 				if(flags[0]){
 					state = BUTTON_READING;
 				}
@@ -131,13 +133,13 @@ int main(void)
 				}
 				state = WAIT;
 				break;
-			// Mise à jour de l'écran toutes les 500 ms
+			// Mise ï¿½ jour de l'ï¿½cran toutes les 500 ms
 			case TFT_UPDATE:
 				// Acquittement du flag
 				flags[1] = FALSE;
 				TFT_update_info();
 
-				// Si le débitmètre est inactif, on set la valeur du débit courant à 0
+				// Si le dï¿½bitmï¿½tre est inactif, on set la valeur du dï¿½bit courant ï¿½ 0
 				if(!DEBIMETRE_get_flag()){
 					DEBIMETRE_set_flow(0);
 				}

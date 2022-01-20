@@ -10,7 +10,7 @@
 #include "macro_types.h"
 #include <string.h>
 
-void reception(void)
+void get_data(void)
 {
 	#define DEMO_TAB_SIZE 128
 
