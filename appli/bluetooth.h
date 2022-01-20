@@ -8,8 +8,10 @@
 #ifndef BLUETOOTH_H_
 #define BLUETOOTH_H_
 
-//mettre les prototypes !!
+#include "macro_types.h"
 
+bool_e BLUETOOTH_get_flag(void);
+void BLUETOOTH_set_flag(bool_e flag);
 void reception(void);
 
 #endif /* BLUETOOTH_H_ */

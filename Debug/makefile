@@ -67,8 +67,8 @@ all: main-build
 main-build: projet_deep_regulateur_debit_eau.elf secondary-outputs
 
 # Tool invocations
-projet_deep_regulateur_debit_eau.elf: $(OBJS) $(USER_OBJS) /Users/hugobouy/Documents/STM32_respertory/projet_deep_regulateur_debit_eau/lib/LinkerScript.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "projet_deep_regulateur_debit_eau.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/hugobouy/Documents/STM32_respertory/projet_deep_regulateur_debit_eau/lib/LinkerScript.ld" -Wl,-Map="projet_deep_regulateur_debit_eau.map" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+projet_deep_regulateur_debit_eau.elf: $(OBJS) $(USER_OBJS) C:\Users\Tristan\OneDrive\Documents\ESEO\I1\DEEP\Projet\Software\lib/LinkerScript.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "projet_deep_regulateur_debit_eau.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Tristan\OneDrive\Documents\ESEO\I1\DEEP\Projet\Software\lib/LinkerScript.ld" -Wl,-Map="projet_deep_regulateur_debit_eau.map" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group -u_printf_float -specs=rdimon.specs  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

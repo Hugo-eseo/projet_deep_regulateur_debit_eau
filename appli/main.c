@@ -110,7 +110,7 @@ int main(void)
 
 	while(1)	//boucle de t�che de fond
 	{
-		get_data();
+		BLUETOOTH_get_data();
 		switch(state){
 			case WAIT:
 				// La lecture du bouton est prioritaire sur la mise � jour de l'�cran
