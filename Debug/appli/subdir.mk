@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../appli/bluetooth.c \
 ../appli/debimetre.c \
 ../appli/image.c \
 ../appli/main.c \
@@ -12,6 +13,7 @@ C_SRCS += \
 ../appli/vanne.c 
 
 OBJS += \
+./appli/bluetooth.o \
 ./appli/debimetre.o \
 ./appli/image.o \
 ./appli/main.o \
@@ -19,6 +21,7 @@ OBJS += \
 ./appli/vanne.o 
 
 C_DEPS += \
+./appli/bluetooth.d \
 ./appli/debimetre.d \
 ./appli/image.d \
 ./appli/main.d \
@@ -33,7 +36,7 @@ appli/%.o: ../appli/%.c appli/subdir.mk
 clean: clean-appli
 
 clean-appli:
-	-$(RM) ./appli/debimetre.d ./appli/debimetre.o ./appli/image.d ./appli/image.o ./appli/main.d ./appli/main.o ./appli/tft.d ./appli/tft.o ./appli/vanne.d ./appli/vanne.o
+	-$(RM) ./appli/bluetooth.d ./appli/bluetooth.o ./appli/debimetre.d ./appli/debimetre.o ./appli/image.d ./appli/image.o ./appli/main.d ./appli/main.o ./appli/tft.d ./appli/tft.o ./appli/vanne.d ./appli/vanne.o
 
 .PHONY: clean-appli
 

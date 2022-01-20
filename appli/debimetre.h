@@ -16,9 +16,13 @@ void DEBIMETRE_handler(void);
 uint16_t DEBIMETRE_get_flow(void);
 void DEBIMETRE_set_flow(uint16_t flow);
 
-uint32_t DEBIMETRE_get_consumption(void);
+uint16_t DEBIMETRE_get_stop_value(void);
+void DEBIMETRE_set_stop_value(uint16_t value);
 
-bool_e DEBIMETRE_get_flag(void);
-void DEBIMETRE_set_flag(bool_e flag);
+uint32_t DEBIMETRE_get_consumption(void);
+void DEBIMETRE_set_consumption(uint16_t value);
+
+bool_e DEBIMETRE_get_flag(uint8_t id);
+void DEBIMETRE_set_flag(bool_e flag, uint8_t id);
 
 #endif /* DEBIMETRE_H_ */

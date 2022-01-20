@@ -35,9 +35,12 @@ static const uint16_t TIMER_VALUE[TIMER_AMOUT] = {10, 500};
 
 typedef enum
 {
+	INIT,
 	WAIT,
 	BUTTON_READING,
-	TFT_UPDATE
+	TFT_UPDATE,
+	SHOWER_START,
+	SHOWER_STOP
 }state_machine_id;
 
 void process_ms(void)
@@ -104,15 +107,36 @@ int main(void)
 	// Initialisation du débimètre
 	DEBIMETRE_init();
 
-	state_machine_id state = WAIT;
+	state_machine_id state = INIT;
 	//static uint16_t previous_flow = 0;
+
+	static bool_e shower_on_duty = FALSE;
+	static bool_e manual_stop = FALSE;
 
 	while(1)	//boucle de tâche de fond
 	{
+		BLUETOOTH_get_data();
 		switch(state){
+			case INIT:
+				if(TRUE){
+					TFT_home_screen();
+					state = WAIT;
+				}
+				break;
 			case WAIT:
+				if(BLUETOOTH_get_flag()){
+					BLUETOOTH_set_flag(FALSE);
+					if(!shower_on_duty){
+						DEBIMETRE_set_flag(FALSE, 1);
+						DEBIMETRE_set_consumption(0);
+						state = SHOWER_START;
+					}
+				}
+				else if(DEBIMETRE_get_flag(1)){
+					state = SHOWER_STOP;
+				}
 				// La lecture du bouton est prioritaire sur la mise à jour de l'écran
-				if(flags[0]){
+				else if(flags[0]){
 					state = BUTTON_READING;
 				}
 				else if(flags[1]){
@@ -128,6 +152,11 @@ int main(void)
 					HAL_GPIO_TogglePin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN);
 					VANNE_switch_position();
 					TFT_set_vanne(HAL_GPIO_ReadPin(LED_PCB_RED_GPIO, LED_PCB_RED_PIN));
+					// Si une douche est en cours, arrêt d'urgence de l'utilisateur
+					if(shower_on_duty){
+						state = SHOWER_STOP;
+						manual_stop = TRUE;
+					}
 				}
 				state = WAIT;
 				break;
@@ -138,12 +167,30 @@ int main(void)
 				TFT_update_info();
 
 				// Si le débitmètre est inactif, on set la valeur du débit courant à 0
-				if(!DEBIMETRE_get_flag()){
+				if(!DEBIMETRE_get_flag(0)){
 					DEBIMETRE_set_flow(0);
 				}
-				DEBIMETRE_set_flag(FALSE);
-
+				DEBIMETRE_set_flag(FALSE, 0);
 				state = WAIT;
+				break;
+			// Lancement d'une douche depuis l'application
+			case SHOWER_START:
+				shower_on_duty = TRUE;
+				DEBIMETRE_set_stop_value(0);
+				TFT_add_console("Lancement de la douche");
+				break;
+			// Stop de la douche automatiquement par le régulateur ou manuellement par l'utilisateur
+			case SHOWER_STOP:
+				shower_on_duty = FALSE;
+				DEBIMETRE_set_stop_value(-1);
+				if(manual_stop){
+					TFT_add_console("Arret manuel d'urgence de la douche");
+				}
+				else{
+					TFT_add_console("Fin automatique de la douche");
+					TFT_add_console("Vous avez consomme toute l'eau a votre disposition !");
+				}
+				TFT_set_shower(0);
 				break;
 			default:
 				break;

@@ -14,7 +14,6 @@
 static uint8_t TFT_add_line(FontDef_t *font, uint16_t spacing);
 static uint8_t TFT_add_sentence(uint8_t line_number, uint16_t color, uint16_t spacing, char * string);
 static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint16_t color, char * string);
-static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order);
 
 static uint16_t TFT_get_sentence_size(uint8_t line_number, uint8_t sentence_order);
 static void TFT_update_screen(void);
@@ -32,6 +31,9 @@ static void TFT_create_rectangle_line(uint8_t line_number, uint8_t line_amount, 
 #define SCREEN_WIDTH			320
 #define SCREEN_HEIGHT			240
 #define SENTENCE_MAX_LEN		45
+#define IMG_WIDTH 				40
+#define IMG_HEIGHT			 	37
+#define FONT_USED 				&Font_7x10
 
 // 'Phrase'
 typedef struct{
@@ -59,6 +61,7 @@ typedef struct{
 static line screen_display[24];
 // Dernière ligne crée
 static uint8_t current_line = 0;
+static bool_e line_deleted = FALSE;
 
 /*
  * @brief Renvoie en pixel la taille d'une phrase
@@ -182,7 +185,7 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
 		line_ref->sentences[i] = line_ref->sentences[i+1];
 	}
 
-	line_ref->sentences_amount -= 1;
+	line_ref->sentences_amount --;
 	line_ref->updated = TRUE;
 }
 
@@ -190,8 +193,14 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
  * @brief Supprime tout le contenu de l'écran. ATTENTION : effet immédiat !
  */
 static void TFT_delete_all(void){
-	for(int i = 0; i<current_line; i++){
+	for(int i=0; i<current_line; i++){
 		line * line_ref = &screen_display[i];
+		for(int j=0; j<line_ref->sentences_amount; j++){
+			sentence * sentence_ref = &line_ref->sentences[j];
+			for(int k=0; k<sentence_ref->size; k++){
+				sentence_ref->string[k]=0;
+			}
+		}
 		line_ref->sentences_amount = 0;
 	}
 	current_line = 0;
@@ -222,6 +231,11 @@ static void TFT_update_screen(void){
 			}
 		}
 	}
+	if(line_deleted){
+		line * line_ref = &screen_display[current_line+1];
+		ILI9341_DrawFilledRectangle(0, line_ref->y_cord, SCREEN_WIDTH, line_ref->y_cord+line_ref->font.FontHeight, ILI9341_COLOR_WHITE);
+		line_ref->updated = FALSE;
+	}
 }
 
 /*
@@ -249,15 +263,8 @@ static void TFT_create_rectangle_line(uint8_t line_number, uint8_t line_amount, 
 	ILI9341_DrawFilledRectangle(x0, y1, x1, y1+-width, color);
 }
 
-void TFT_init(void){
-	#define IMG_WIDTH 40
-	#define IMG_HEIGHT 37
-	#define FONT_USED &Font_7x10
-
-	// Initialisation de la planche de dessin
-	ILI9341_Init();
-	ILI9341_Rotate(ILI9341_Orientation_Landscape_2);
-	ILI9341_Fill(ILI9341_COLOR_WHITE);
+void TFT_home_screen(){
+	TFT_delete_all();
 
 	// Logo Regucolo
 	ILI9341_putImage(20, 10, IMG_WIDTH, IMG_HEIGHT, TFT_img, IMG_WIDTH*IMG_HEIGHT);
@@ -281,16 +288,53 @@ void TFT_init(void){
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "0");
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "L");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 6, "Type de douche selectionnee :");
-	TFT_add_sentence(current_line-1, ILI9341_COLOR_GREEN, 6, "ECOLOGIQUE");
+	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 6, "AUCUNE");
 	TFT_create_rectangle_line(4, 4, 3, ILI9341_COLOR_BLUE2, 2, 3, 3);
 
 	//Troisième rectangle d'information
-	TFT_add_sentence(TFT_add_line(FONT_USED, 15), ILI9341_COLOR_MAGENTA, 6, "Historique");
-	TFT_add_sentence(TFT_add_line(FONT_USED, 7), ILI9341_COLOR_BLACK, 6, "11/01/22 : 12L");
-	TFT_create_rectangle_line(8, 2, 3, ILI9341_COLOR_MAGENTA, 2, 3, 3);
+	TFT_add_sentence(TFT_add_line(FONT_USED, 15), ILI9341_COLOR_MAGENTA, 6, "Console");
+	TFT_add_line(FONT_USED, 7);
+	TFT_add_line(FONT_USED, 3);
+	TFT_add_line(FONT_USED, 3);
+	TFT_add_line(FONT_USED, 3);
+	TFT_add_console("Initialisation de la console");
+	TFT_create_rectangle_line(8, 5, 3, ILI9341_COLOR_MAGENTA, 2, 3, 3);
 
 	TFT_update_screen();
 
+}
+
+void TFT_add_console(char * string){
+	static uint8_t command_amount = 0;
+	if(command_amount<4){
+		TFT_add_sentence(9+command_amount, ILI9341_COLOR_BLACK, 6, string);
+		command_amount+=1;
+	}
+	else{
+		for(int i=0; i<3; i++){
+			line * line_ref = &screen_display[10+i];
+			sentence * sentence_ref = &line_ref->sentences[0];
+			TFT_edit_sentence(9+i, 0, ILI9341_COLOR_BLACK, &sentence_ref->string[0]);
+		}
+		TFT_edit_sentence(12, 0, ILI9341_COLOR_BLACK, string);
+	}
+}
+
+void TFT_init(void){
+	// Initialisation de la planche de dessin
+	ILI9341_Init();
+	ILI9341_Rotate(ILI9341_Orientation_Landscape_2);
+	ILI9341_Fill(ILI9341_COLOR_WHITE);
+
+	// Logo Regucolo
+	ILI9341_putImage(140, 63, IMG_WIDTH, IMG_HEIGHT, TFT_img, IMG_WIDTH*IMG_HEIGHT);
+
+	TFT_add_sentence(TFT_add_line(&Font_11x18, 100), ILI9341_COLOR_BLACK, 39, "Bienvenue sur Reguloco");
+	TFT_add_sentence(TFT_add_line(FONT_USED, 5), ILI9341_COLOR_BLACK, 34, "Pour commencer, lancez l'application" );
+	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 9, "Reguloco sur votre smartphone et connectez-");
+	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 90, "vous au regulateur !");
+
+	TFT_update_screen();
 }
 
 /*
@@ -301,6 +345,8 @@ void TFT_set_vanne(bool_e state){
 	uint16_t color = state?ILI9341_COLOR_GREEN:ILI9341_COLOR_RED;
 	char * text = state?"OUVERTE":"FERMEE";
 	TFT_edit_sentence(2, 1, color, &text[0]);
+	text = state?"Ouverture de la vanne":"Fermeture de la vanne";
+	TFT_add_console(text);
 	TFT_update_screen();
 }
 
@@ -312,6 +358,8 @@ void TFT_set_connexion(bool_e state){
 	uint16_t color = state?ILI9341_COLOR_GREEN:ILI9341_COLOR_RED;
 	char * text = state?"ON":"OFF";
 	TFT_edit_sentence(3, 1, color, &text[0]);
+	text = state?"Connexion bluetooth etablie":"Perte de la connexion bluetooth";
+	TFT_add_console(text);
 	TFT_update_screen();
 }
 
@@ -323,10 +371,14 @@ void TFT_set_shower(int state){
 	uint16_t color;
 	char * text;
 	if(state==0){
+		color = ILI9341_COLOR_BLACK;
+		text = "AUCUNE";
+	}
+	else if(state==1){
 		color = ILI9341_COLOR_RED;
 		text = "DIEUX";
 	}
-	else if(state==1){
+	else if(state==2){
 		color = ILI9341_COLOR_BLUE2;
 		text = "NORMALE";
 	}
