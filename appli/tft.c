@@ -283,10 +283,10 @@ void TFT_home_screen(){
 	TFT_add_sentence(TFT_add_line(FONT_USED, 15), ILI9341_COLOR_BLUE2, 6, "Consommation en cours");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 7), ILI9341_COLOR_BLACK, 6, "Debit d'eau courant :");
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "0");
-	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "L/min");
+	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "mL/min");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 6, "Eau consommee :");
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "0");
-	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "L");
+	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 7, "mL");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 6, "Type de douche selectionnee :");
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 6, "AUCUNE");
 	TFT_create_rectangle_line(4, 4, 3, ILI9341_COLOR_BLUE2, 2, 3, 3);
@@ -412,7 +412,8 @@ void TFT_update_info(void){
 
 	// Affiche la quantié d'eau consommée
 	if(consumption[0] != consumption[1]){
-		TFT_edit_sentence(5, 1, ILI9341_COLOR_BLACK, &tab_consumption);
+		TFT_edit_sentence(6, 1, ILI9341_COLOR_BLACK, &tab_consumption);
 		consumption[1] = consumption[0];
 	}
+	TFT_update_screen();
 }
