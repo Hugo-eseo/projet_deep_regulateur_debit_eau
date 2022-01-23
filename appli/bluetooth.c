@@ -20,7 +20,8 @@ typedef enum
 {
 	WAIT,
 	DATA_WAITING,
-	SEND_DATA
+	SEND_DATA,
+	STOP
 }state_machine_id;
 
 void BLUETOOTH_handler(void)
@@ -31,13 +32,13 @@ void BLUETOOTH_handler(void)
 	{
 		case WAIT:
 			if(UART_data_ready(UART1_ID))
-					{
-						uint8_t data = UART_getc(UART1_ID);	//lecture du prochain caractère
-						if(data=='C')						//On vérifie si le bluetooth est connecté
-						{
-							state = DATA_WAITING;			//Si c'est le cas on passe à l'état suivant
-						}
-					}
+			{
+				uint8_t data = UART_getc(UART1_ID);	//lecture du prochain caractère
+				if(data=='C')						//On vérifie si le bluetooth est connecté
+				{
+					state = DATA_WAITING;			//Si c'est le cas on passe à l'état suivant
+				}
+			}
 			break;
 		case DATA_WAITING:
 			if(UART_data_ready(UART1_ID))					//Attente de réception d'un caractère
@@ -48,6 +49,15 @@ void BLUETOOTH_handler(void)
 		case SEND_DATA:
 			BLUETOOTH_get_data();							//On recoit la trame puis la redirige vers la fonction
 			break;											//contrôlant l'arrêt de la vanne
+		case STOP:
+			if(UART_data_ready(UART1_ID))
+			{
+				uint8_t data = UART_getc(UART1_ID);	//lecture du prochain caractère
+				if(data=='S')						//On vérifie si le bouton d'arrêt d'urgence à été pressé
+				{
+					//fonction d'arrêt d'urgence
+				}
+			}
 		default:
 			break;
 	}

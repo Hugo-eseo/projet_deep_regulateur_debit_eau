@@ -10,6 +10,7 @@
 
 #include "macro_types.h"
 
+void BLUETOOTH_handler(void);
 bool_e BLUETOOTH_get_flag(void);
 void BLUETOOTH_set_flag(bool_e flag);
 void reception(void);
