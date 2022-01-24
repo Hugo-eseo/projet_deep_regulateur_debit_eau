@@ -16,11 +16,10 @@ static void DEBIMETRE_timer_start(void);
 static uint16_t DEBIMETRE_timer_stop(void);
 static void DEBIMETRE_calculation(uint16_t time);
 
-static uint16_t DEBIMETRE_flow = 0; // En mililitre/mins
-static uint32_t DEBIMETRE_consumption = 0; //En mililitres, 4M L max avant overflow
-static bool_e DEBIMETRE_flag[2] = {FALSE, FALSE}; //Flag pour la remise à 0 lorsque le capteur est inactif
-
-static uint16_t DEBIMETRE_stop_value = -1; // En mililitres
+static volatile uint16_t DEBIMETRE_flow = 0; // En mililitre/mins
+static volatile uint32_t DEBIMETRE_consumption = 0; //En mililitres, 4M L max avant overflow
+static volatile bool_e DEBIMETRE_flag = FALSE; //Flag pour la remise à 0 lorsque le capteur est inactif
+static volatile uint16_t DEBIMETRE_stop_value = -1; // En mililitres
 
 typedef enum
 {
@@ -37,12 +36,12 @@ void DEBIMETRE_set_flow(uint16_t flow){
 	DEBIMETRE_flow = flow;
 }
 
-bool_e DEBIMETRE_get_flag(uint8_t id){
-	return(DEBIMETRE_flag[id]);
+bool_e DEBIMETRE_get_flag(){
+	return(DEBIMETRE_flag);
 }
 
-void DEBIMETRE_set_flag(bool_e flag, uint8_t id){
-	DEBIMETRE_flag[id] = flag;
+void DEBIMETRE_set_flag(bool_e flag){
+	DEBIMETRE_flag = flag;
 }
 
 uint16_t DEBIMETRE_get_stop_value(void){
@@ -80,7 +79,7 @@ void DEBIMETRE_handler(void){
 	static uint8_t pulse = 0;
 	uint16_t period = 0;
 	// L'aquitement du flag d'interruption est effectute en amont, celui-ci est utilié pour la ràz en cas d'inactivité
-	DEBIMETRE_flag[0] = TRUE;
+	DEBIMETRE_flag = TRUE;
 
 	switch(state)
 	{
@@ -97,11 +96,6 @@ void DEBIMETRE_handler(void){
 			if(pulse == 9){
 				pulse = 0;
 				DEBIMETRE_consumption += 2;
-
-				// Lorsque la consommation max est atteinte, on lève un flag dans le main
-				if(DEBIMETRE_consumption >= DEBIMETRE_stop_value){
-					DEBIMETRE_flag[1] = TRUE;
-				}
 			}
 			break;
 		default:
@@ -121,5 +115,5 @@ static uint16_t DEBIMETRE_timer_stop(void){
 
 static void DEBIMETRE_calculation(uint16_t period){
 	// Calcul du débit et mise à jour du pointeur du main
-	DEBIMETRE_flow = (period*5/144) - (400/9); // En mililitre/mins
+	DEBIMETRE_flow = (period*0,325); // En mililitre/mins
 }

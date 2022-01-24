@@ -22,7 +22,7 @@ void DEBIMETRE_set_stop_value(uint16_t value);
 uint32_t DEBIMETRE_get_consumption(void);
 void DEBIMETRE_set_consumption(uint16_t value);
 
-bool_e DEBIMETRE_get_flag(uint8_t id);
-void DEBIMETRE_set_flag(bool_e flag, uint8_t id);
+bool_e DEBIMETRE_get_flag();
+void DEBIMETRE_set_flag(bool_e flag);
 
 #endif /* DEBIMETRE_H_ */

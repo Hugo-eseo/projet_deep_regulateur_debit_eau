@@ -116,7 +116,7 @@ static uint8_t TFT_add_sentence(uint8_t line_number, uint16_t color, uint16_t sp
 	sentence_ref->x_cord = x + spacing;
 	sentence_ref->updated = TRUE;
 
-	int i=0;
+	uint8_t i=0;
 	while(*string){
 		sentence_ref->string[i] = *string++;
 		i++;
@@ -143,7 +143,7 @@ static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint1
 	sentence_ref->color = color;
 	sentence_ref->updated = TRUE;
 
-	int i=0;
+	uint8_t i=0;
 	while(*string){
 		sentence_ref->string[i] = *string++;
 		i++;
@@ -154,7 +154,7 @@ static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint1
 		i++;
 	}
 
-	for(int i=1; i<=line_ref->sentences_amount-sentence_order; i++){
+	for(uint8_t i=1; i<=line_ref->sentences_amount-sentence_order; i++){
 		sentence_ref = &line_ref->sentences[sentence_order+i];
 		sentence * previous_sentence_ref = &line_ref->sentences[sentence_order+i-1];
 		sentence_ref->previous_size += (sentence_ref->x_cord - previous_sentence_ref->x_cord)/line_ref->font.FontWidth;
@@ -174,14 +174,14 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
 
 	uint16_t x = sentence_ref->x_cord - sentence_ref->spacing;
 
-	for(int i=sentence_order+1; i<line_ref->sentences_amount; i++){
+	for(uint8_t i=sentence_order+1; i<line_ref->sentences_amount; i++){
 		sentence_ref = &line_ref->sentences[i];
 		sentence_ref->x_cord = x + sentence_ref->spacing;
 		x += sentence_ref->spacing + TFT_get_sentence_size(line_number, i);
 		sentence_ref->updated = TRUE;
 	}
 
-	for(int i=sentence_order; i<line_ref->sentences_amount-1; i++){
+	for(uint8_t i=sentence_order; i<line_ref->sentences_amount-1; i++){
 		line_ref->sentences[i] = line_ref->sentences[i+1];
 	}
 
@@ -193,11 +193,11 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
  * @brief Supprime tout le contenu de l'écran. ATTENTION : effet immédiat !
  */
 static void TFT_delete_all(void){
-	for(int i=0; i<current_line; i++){
+	for(uint8_t i=0; i<current_line; i++){
 		line * line_ref = &screen_display[i];
-		for(int j=0; j<line_ref->sentences_amount; j++){
+		for(uint8_t j=0; j<line_ref->sentences_amount; j++){
 			sentence * sentence_ref = &line_ref->sentences[j];
-			for(int k=0; k<sentence_ref->size; k++){
+			for(uint8_t k=0; k<sentence_ref->size; k++){
 				sentence_ref->string[k]=0;
 			}
 		}
@@ -211,14 +211,14 @@ static void TFT_delete_all(void){
  * @brief Met à jour l'écran (si il y a des mises à jours)
  */
 static void TFT_update_screen(void){
-	for(int i=0; i<current_line; i++){
+	for(uint8_t i=0; i<current_line; i++){
 		line * line_ref = &screen_display[i];
 		uint16_t y = line_ref->y_cord;
 		if(line_ref->updated){
 			ILI9341_DrawFilledRectangle(0, y, SCREEN_WIDTH, y+line_ref->font.FontHeight, ILI9341_COLOR_WHITE);
 			line_ref->updated = FALSE;
 		}
-		for(int j=0; j<line_ref->sentences_amount; j++){
+		for(uint8_t j=0; j<line_ref->sentences_amount; j++){
 			sentence * sentence_ref = &line_ref->sentences[j];
 			if(sentence_ref->updated){
 				uint16_t x = sentence_ref->x_cord;
@@ -253,7 +253,7 @@ static void TFT_create_rectangle_line(uint8_t line_number, uint8_t line_amount, 
 	uint16_t y0 = line_ref->y_cord - spacing;
 	uint16_t x1 = SCREEN_WIDTH - padding_right;
 	uint16_t y1 = line_ref->y_cord + line_ref->font.FontHeight + spacing;
-	for(int i=1; i<line_amount; i++){
+	for(uint8_t i=1; i<line_amount; i++){
 		line * line_ref = &screen_display[line_number+i];
 		y1 += line_ref->spacing + line_ref->font.FontHeight;
 	}
@@ -267,10 +267,10 @@ void TFT_home_screen(){
 	TFT_delete_all();
 
 	// Logo Regucolo
-	ILI9341_putImage(20, 10, IMG_WIDTH, IMG_HEIGHT, TFT_img, IMG_WIDTH*IMG_HEIGHT);
+	ILI9341_putImage(20, 10, IMG_WIDTH, IMG_HEIGHT, TFT_get_image(), IMG_WIDTH*IMG_HEIGHT);
 	// Information sur l'application
 	TFT_add_sentence(TFT_add_line(&Font_11x18, 20), ILI9341_COLOR_BLACK, IMG_WIDTH+30, "Reguloco");
-	TFT_add_sentence(TFT_add_line(FONT_USED, 0), ILI9341_COLOR_BLACK, 260, "v0.1.2");
+	TFT_add_sentence(TFT_add_line(FONT_USED, 0), ILI9341_COLOR_BLACK, 260, "v1.2.4");
 
 	//Premier rectangle d'informations
 	TFT_add_sentence(TFT_add_line(FONT_USED, 10), ILI9341_COLOR_BLACK, 6, "Etat de la vanne :");
@@ -311,7 +311,7 @@ void TFT_add_console(char * string){
 		command_amount+=1;
 	}
 	else{
-		for(int i=0; i<3; i++){
+		for(uint8_t i=0; i<3; i++){
 			line * line_ref = &screen_display[10+i];
 			sentence * sentence_ref = &line_ref->sentences[0];
 			TFT_edit_sentence(9+i, 0, ILI9341_COLOR_BLACK, &sentence_ref->string[0]);
@@ -327,7 +327,7 @@ void TFT_init(void){
 	ILI9341_Fill(ILI9341_COLOR_WHITE);
 
 	// Logo Regucolo
-	ILI9341_putImage(140, 63, IMG_WIDTH, IMG_HEIGHT, TFT_img, IMG_WIDTH*IMG_HEIGHT);
+	ILI9341_putImage(140, 63, IMG_WIDTH, IMG_HEIGHT, TFT_get_image(), IMG_WIDTH*IMG_HEIGHT);
 
 	TFT_add_sentence(TFT_add_line(&Font_11x18, 100), ILI9341_COLOR_BLACK, 39, "Bienvenue sur Reguloco");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 5), ILI9341_COLOR_BLACK, 34, "Pour commencer, lancez l'application" );
@@ -365,26 +365,26 @@ void TFT_set_connexion(bool_e state){
 
 /*
  * @brief Modifie le texte indiquant le type de douche choisie
- * @param state : 0 = DIEUX, 1 = NORMALE, autre = ECOLOGIQUE
+ * @param state :  200 = DIEUX, 150 = CLASSIQUE, 90 = ECOLOGIQUE, Autre = AUCUNE
  */
-void TFT_set_shower(int state){
+void TFT_set_shower(uint8_t value){
 	uint16_t color;
 	char * text;
-	if(state==0){
+	if(value==90){
 		color = ILI9341_COLOR_BLACK;
-		text = "AUCUNE";
+		text = "ECOLOGIQUE";
 	}
-	else if(state==1){
+	else if(value==150){
 		color = ILI9341_COLOR_RED;
-		text = "DIEUX";
+		text = "CLASSIQUE";
 	}
-	else if(state==2){
+	else if(value==200){
 		color = ILI9341_COLOR_BLUE2;
-		text = "NORMALE";
+		text = "DIEUX";
 	}
 	else{
 		color = ILI9341_COLOR_GREEN;
-		text = "ECOLOGIQUE";
+		text = "AUCUNE";
 	}
 	TFT_edit_sentence(7, 1, color, &text[0]);
 	TFT_update_screen();
