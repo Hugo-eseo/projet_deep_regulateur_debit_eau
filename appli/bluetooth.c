@@ -19,7 +19,7 @@ static void BLUETOOTH_handler(void);
 static uint8_t tab[DEMO_TAB_SIZE];
 static volatile bool_e BLUETOOTH_flag = FALSE; //Flag pour indiquer la présence de données
 
-static bluetooth_status status = DISCONNECTED;
+static volatile bluetooth_status status = DISCONNECTED;
 
 static void BLUETOOTH_handler(void)
 {
@@ -37,7 +37,15 @@ static void BLUETOOTH_handler(void)
 			}
 			// Sinon c'est le début d'une douche qui est demandée
 			else{
-				uint8_t trame = tab[0]*1 - 48 + tab[1]*10 - 48 + tab[2]*100 - 48;
+				uint8_t trame = tab[0]-48;
+				uint8_t i = 1;
+				while(tab[i]!=90){
+					i++;
+				}
+				for(uint8_t j=1; j<i; j++){
+					trame *= 10;
+					trame += tab[j]-48;
+				}
 				BLUETOOTH_flag = TRUE;							//indique que la trame de donnée est prête
 				DEBIMETRE_set_stop_value(trame);
 			}

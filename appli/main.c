@@ -19,14 +19,6 @@
 #include "debimetre.h"
 #include "bluetooth.h"
 
-
-/*
-bool_e readButton(void)
-{
-	return !HAL_GPIO_ReadPin(BLUE_BUTTON_GPIO, BLUE_BUTTON_PIN);
-}
-*/
-
 // Timers pour la lecture du bonton et la mise à jour de l'écran
 #define TIMER_AMOUT 2
 // {BUTTON_READING, TFT_UPDATE}
@@ -60,6 +52,11 @@ void state_machine(void){
 				// On change d'écran et on attend les instructions
 				TFT_home_screen();
 				state = WAITING_INSTRUCTIONS;
+			}
+			// Passage en force
+			else if(button_pressed){
+				TFT_home_screen();
+				state = WAITING_CONNEXION;
 			}
 			previous_state = INIT;
 			break;
@@ -101,7 +98,7 @@ void state_machine(void){
 				VANNE_open();
 			}
 			// Si un arrêt d'urgence est demandé
-			if(button_pressed || BLUETOOTH_get_flag()){
+			else if(button_pressed || BLUETOOTH_get_flag()){
 				state = EMERGENCY_STOP;
 			}
 			// Si l'on atteint la valeur d'arrêt
@@ -119,7 +116,7 @@ void state_machine(void){
 				VANNE_open();
 			}
 			// Si arrêt par l'utilisateur
-			if(button_pressed){
+			else if(button_pressed){
 				state = EMERGENCY_STOP;
 			}
 			previous_state = MANUAL_DELIVERY;
@@ -130,7 +127,7 @@ void state_machine(void){
 			VANNE_close();
 			BLUETOOTH_set_flag(FALSE);
 			// On l'indique dans la console
-			TFT_add_console("Arrêt d'urgence par l'utilisateur");
+			TFT_add_console("Arret d'urgence par l'utilisateur");
 			// On revient à l'état de départ
 			state = (previous_state == MANUAL_DELIVERY?WAITING_CONNEXION:WAITING_INSTRUCTIONS);
 			previous_state = EMERGENCY_STOP;
@@ -241,5 +238,6 @@ int main(void)
 			TFT_update_info(); // Maj
 			DEBIMETRE_set_flag(FALSE);
 		}
+		state_machine();
 	}
 }

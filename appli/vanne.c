@@ -7,6 +7,7 @@
 
 #include "vanne.h"
 #include "config.h"
+#include "stm32f1_gpio.h"
 
 void VANNE_init(void){
 	//Initialisation du port de la vanne

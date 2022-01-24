@@ -329,7 +329,7 @@ void TFT_init(void){
 	// Logo Regucolo
 	ILI9341_putImage(140, 63, IMG_WIDTH, IMG_HEIGHT, TFT_get_image(), IMG_WIDTH*IMG_HEIGHT);
 
-	TFT_add_sentence(TFT_add_line(&Font_11x18, 100), ILI9341_COLOR_BLACK, 39, "Bienvenue sur Reguloco");
+	TFT_add_sentence(TFT_add_line(&Font_11x18, 100), ILI9341_COLOR_BLACK, 39, "Bienvenue sur Regucolo");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 5), ILI9341_COLOR_BLACK, 34, "Pour commencer, lancez l'application" );
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 9, "Reguloco sur votre smartphone et connectez-");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 90, "vous au regulateur !");
@@ -371,7 +371,7 @@ void TFT_set_shower(uint8_t value){
 	uint16_t color;
 	char * text;
 	if(value==90){
-		color = ILI9341_COLOR_BLACK;
+		color = ILI9341_COLOR_GREEN;
 		text = "ECOLOGIQUE";
 	}
 	else if(value==150){
@@ -383,7 +383,7 @@ void TFT_set_shower(uint8_t value){
 		text = "DIEUX";
 	}
 	else{
-		color = ILI9341_COLOR_GREEN;
+		color = ILI9341_COLOR_BLACK;
 		text = "AUCUNE";
 	}
 	TFT_edit_sentence(7, 1, color, &text[0]);

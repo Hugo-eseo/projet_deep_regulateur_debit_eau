@@ -16,10 +16,10 @@ static void DEBIMETRE_timer_start(void);
 static uint16_t DEBIMETRE_timer_stop(void);
 static void DEBIMETRE_calculation(uint16_t time);
 
-static volatile uint16_t DEBIMETRE_flow = 0; // En mililitre/mins
+static volatile uint32_t DEBIMETRE_flow = 0; // En mililitre/mins
 static volatile uint32_t DEBIMETRE_consumption = 0; //En mililitres, 4M L max avant overflow
 static volatile bool_e DEBIMETRE_flag = FALSE; //Flag pour la remise à 0 lorsque le capteur est inactif
-static volatile uint16_t DEBIMETRE_stop_value = -1; // En mililitres
+static volatile uint32_t DEBIMETRE_stop_value = -1; // En mililitres
 
 typedef enum
 {
@@ -28,7 +28,7 @@ typedef enum
 }state_machine_id;
 
 // Accesseurs
-uint16_t DEBIMETRE_get_flow(void){
+uint32_t DEBIMETRE_get_flow(void){
 	return(DEBIMETRE_flow);
 }
 
@@ -44,7 +44,7 @@ void DEBIMETRE_set_flag(bool_e flag){
 	DEBIMETRE_flag = flag;
 }
 
-uint16_t DEBIMETRE_get_stop_value(void){
+uint32_t DEBIMETRE_get_stop_value(void){
 	return DEBIMETRE_stop_value;
 }
 
@@ -115,5 +115,5 @@ static uint16_t DEBIMETRE_timer_stop(void){
 
 static void DEBIMETRE_calculation(uint16_t period){
 	// Calcul du débit et mise à jour du pointeur du main
-	DEBIMETRE_flow = (period*0,325); // En mililitre/mins
+	DEBIMETRE_flow = (uint32_t)(period*0,325); // En mililitre/mins
 }
