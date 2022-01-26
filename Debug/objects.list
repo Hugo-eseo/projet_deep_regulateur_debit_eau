@@ -1,3 +1,4 @@
+"./appli/bluetooth.o"
 "./appli/debimetre.o"
 "./appli/image.o"
 "./appli/main.o"

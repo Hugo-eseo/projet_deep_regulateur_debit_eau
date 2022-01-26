@@ -55,6 +55,10 @@
 #define DEBIMETRE_READER_GPIO	GPIOB
 #define DEBIMETRE_READER_PIN	GPIO_PIN_10
 
+// Branchement du pin 'state' de l'HC05
+#define BLUETOOTH_STATE_GPIO	GPIOA
+#define BLUETOOTH_STATE_PIN		GPIO_PIN_4
+
 //Choisir les broches pour l'UART1, parmi ces deux possibilités :
 #define UART1_ON_PB6_PB7
 //#define UART1_ON_PA9_PA10

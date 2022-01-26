@@ -8,6 +8,9 @@
 #ifndef VANNE_H_
 #define VANNE_H_
 
+#include "macro_types.h"
+
+void VANNE_init(void);
 void VANNE_open(void);
 void VANNE_close(void);
 void VANNE_switch_position(void);

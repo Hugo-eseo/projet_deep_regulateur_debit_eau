@@ -16,9 +16,10 @@ static void DEBIMETRE_timer_start(void);
 static uint16_t DEBIMETRE_timer_stop(void);
 static void DEBIMETRE_calculation(uint16_t time);
 
-static uint16_t DEBIMETRE_flow = 0; // En mililitre/mins
-static uint32_t DEBIMETRE_consumption = 0; //En mililitre, 4M L max avant overflow
-static bool_e DEBIMETRE_flag = FALSE; //Flag pour la remise à 0 lorsque le capteur est inactif
+static volatile uint32_t DEBIMETRE_flow = 0; // En mililitre/mins
+static volatile uint32_t DEBIMETRE_consumption = 0; //En mililitres, 4M L max avant overflow
+static volatile bool_e DEBIMETRE_flag = FALSE; //Flag pour la remise à 0 lorsque le capteur est inactif
+static volatile uint32_t DEBIMETRE_stop_value = -1; // En mililitres
 
 typedef enum
 {
@@ -27,7 +28,7 @@ typedef enum
 }state_machine_id;
 
 // Accesseurs
-uint16_t DEBIMETRE_get_flow(void){
+uint32_t DEBIMETRE_get_flow(void){
 	return(DEBIMETRE_flow);
 }
 
@@ -35,7 +36,7 @@ void DEBIMETRE_set_flow(uint16_t flow){
 	DEBIMETRE_flow = flow;
 }
 
-bool_e DEBIMETRE_get_flag(void){
+bool_e DEBIMETRE_get_flag(){
 	return(DEBIMETRE_flag);
 }
 
@@ -43,8 +44,20 @@ void DEBIMETRE_set_flag(bool_e flag){
 	DEBIMETRE_flag = flag;
 }
 
+uint32_t DEBIMETRE_get_stop_value(void){
+	return DEBIMETRE_stop_value;
+}
+
+void DEBIMETRE_set_stop_value(uint16_t value){
+	DEBIMETRE_stop_value = value;
+}
+
 uint32_t DEBIMETRE_get_consumption(void){
 	return(DEBIMETRE_consumption);
+}
+
+void DEBIMETRE_set_consumption(uint16_t value){
+	DEBIMETRE_consumption = value;
 }
 
 void DEBIMETRE_init(void){
@@ -80,9 +93,9 @@ void DEBIMETRE_handler(void){
 			pulse ++;
 			state = WAIT;
 
-			if(pulse == 9){
+			if(pulse == 10){
 				pulse = 0;
-				DEBIMETRE_consumption += 2;
+				DEBIMETRE_consumption += 1;
 			}
 			break;
 		default:
@@ -102,5 +115,5 @@ static uint16_t DEBIMETRE_timer_stop(void){
 
 static void DEBIMETRE_calculation(uint16_t period){
 	// Calcul du débit et mise à jour du pointeur du main
-	DEBIMETRE_flow = (period*5/144) - (400/9); // En mililitre/mins
+	DEBIMETRE_flow = (uint32_t)(period*0,325); // En mililitre/mins
 }
