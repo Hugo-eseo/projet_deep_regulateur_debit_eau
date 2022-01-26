@@ -74,12 +74,8 @@ void state_machine(void){
 			break;
 		// Si l'utilisateur est connecté
 		case WAITING_INSTRUCTIONS:
-			// Première entrée
-			if(state != previous_state){
-				TFT_set_connexion(TRUE);
-			}
 			// Si il demande un 'delivery' (activation de la vanne)
-			else if(BLUETOOTH_get_flag()){
+			if(BLUETOOTH_get_flag()){
 				state = DELIVERY;
 			}
 			// Si le bluetooth est déconnecté
@@ -181,7 +177,7 @@ int main(void)
 {
 	//Initialisation de la couche logicielle HAL (Hardware Abstraction Layer)
 	//Cette ligne doit rester la première étape de la fonction main().
-	HAL_Init();
+ 	HAL_Init();
 
 	//Initialisation de l'UART2 à la vitesse de 9600 bauds/secondes (92kbits/s) PA2 : Tx  | PA3 : Rx.
 	//Attention, les pins PA2 et PA3 ne sont pas reliées jusqu'au connecteur de la Nucleo.
@@ -203,6 +199,9 @@ int main(void)
 	//Initialisation du port du bouton du PCB
 	BSP_GPIO_PinCfg(PCB_BUTTON_GPIO, PCB_BUTTON_PIN, GPIO_MODE_INPUT,GPIO_PULLUP,GPIO_SPEED_FREQ_HIGH);
 
+	//Initialisation de la broche state
+	BSP_GPIO_PinCfg(BLUETOOTH_STATE_GPIO, BLUETOOTH_STATE_PIN, GPIO_MODE_INPUT,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
+
 	//On ajoute la fonction process_ms à la liste des fonctions appelées automatiquement chaque ms par la routine d'interruption du périphérique SYSTICK
 	Systick_add_callback_function(&process_ms);
 
@@ -217,6 +216,8 @@ int main(void)
 
 	while(1)	//boucle de tâche de fond
 	{
+		static bool_e bluetooth_state = FALSE;
+		static bool_e previous_bluetooth_state;
 		// Lecture de l'uart
 		BLUETOOTH_get_data();
 
@@ -225,6 +226,19 @@ int main(void)
 			// Acquittement du flag
 			flags[0] = FALSE;
 			button_pressed = button_press_event();
+
+			bluetooth_state = HAL_GPIO_ReadPin(BLUETOOTH_STATE_GPIO, BLUETOOTH_STATE_PIN);
+			if(bluetooth_state != previous_bluetooth_state){
+				if(bluetooth_state){
+					BLUETOOTH_set_status(CONNECTED);
+					TFT_set_connexion(TRUE);
+				}
+				else{
+					BLUETOOTH_set_status(DISCONNECTED);
+					TFT_set_connexion(FALSE);
+				}
+				previous_bluetooth_state = bluetooth_state;
+			}
 		}
 		// Maj de l'écran toutes les 500 ms
 		else if(flags[1]){

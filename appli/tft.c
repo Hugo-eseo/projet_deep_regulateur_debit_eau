@@ -269,14 +269,14 @@ void TFT_home_screen(){
 	// Logo Regucolo
 	ILI9341_putImage(20, 10, IMG_WIDTH, IMG_HEIGHT, TFT_get_image(), IMG_WIDTH*IMG_HEIGHT);
 	// Information sur l'application
-	TFT_add_sentence(TFT_add_line(&Font_11x18, 20), ILI9341_COLOR_BLACK, IMG_WIDTH+30, "Reguloco");
+	TFT_add_sentence(TFT_add_line(&Font_11x18, 20), ILI9341_COLOR_BLACK, IMG_WIDTH+30, "Regucolo");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 0), ILI9341_COLOR_BLACK, 260, "v1.2.4");
 
 	//Premier rectangle d'informations
 	TFT_add_sentence(TFT_add_line(FONT_USED, 10), ILI9341_COLOR_BLACK, 6, "Etat de la vanne :");
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_RED, 7, "FERMEE");
 	TFT_add_sentence(TFT_add_line(FONT_USED, 3), ILI9341_COLOR_BLACK, 6, "Connexion avec l'application :");
-	TFT_add_sentence(current_line-1, ILI9341_COLOR_RED, 7, "OFF");
+	TFT_add_sentence(current_line-1, ILI9341_COLOR_GREEN, 7, "ON");
 	TFT_create_rectangle_line(2, 2, 3, ILI9341_COLOR_RED, 2, 3, 3);
 
 	//Deuxième rectangle d'informations
@@ -370,21 +370,21 @@ void TFT_set_connexion(bool_e state){
 void TFT_set_shower(uint8_t value){
 	uint16_t color;
 	char * text;
-	if(value==90){
+	if(value==0){
+		color = ILI9341_COLOR_BLACK;
+		text = "AUCUNE";
+	}
+	else if(value<150){
 		color = ILI9341_COLOR_GREEN;
 		text = "ECOLOGIQUE";
 	}
-	else if(value==150){
-		color = ILI9341_COLOR_RED;
+	else if(value<200){
+		color = ILI9341_COLOR_BLUE2;
 		text = "CLASSIQUE";
 	}
-	else if(value==200){
-		color = ILI9341_COLOR_BLUE2;
-		text = "DIEUX";
-	}
 	else{
-		color = ILI9341_COLOR_BLACK;
-		text = "AUCUNE";
+		color = ILI9341_COLOR_RED;
+		text = "DIEUX";
 	}
 	TFT_edit_sentence(7, 1, color, &text[0]);
 	TFT_update_screen();

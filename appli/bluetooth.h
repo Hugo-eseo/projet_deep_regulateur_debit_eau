@@ -20,6 +20,7 @@ bool_e BLUETOOTH_get_flag(void);
 void BLUETOOTH_set_flag(bool_e flag);
 
 bluetooth_status BLUETOOTH_get_status(void);
+void BLUETOOTH_set_status(bluetooth_status new_status);
 
 void BLUETOOTH_get_data(void);
 void BLUETOOTH_send_data(char c);

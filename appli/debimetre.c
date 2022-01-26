@@ -93,9 +93,9 @@ void DEBIMETRE_handler(void){
 			pulse ++;
 			state = WAIT;
 
-			if(pulse == 9){
+			if(pulse == 10){
 				pulse = 0;
-				DEBIMETRE_consumption += 2;
+				DEBIMETRE_consumption += 1;
 			}
 			break;
 		default:

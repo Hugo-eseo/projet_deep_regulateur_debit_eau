@@ -9,12 +9,15 @@
 #include "stm32f1_uart.h"
 #include "stm32f1_gpio.h"
 #include "macro_types.h"
+#include "stm32f1_timer.h"
+#include "config.h"
 #include <string.h>
 
 #define DEMO_TAB_SIZE	128
 
 static void BLUETOOTH_handler(void);
 
+static const timer_id_e TIMER = TIMER2_ID;
 
 static uint8_t tab[DEMO_TAB_SIZE];
 static volatile bool_e BLUETOOTH_flag = FALSE; //Flag pour indiquer la présence de données
@@ -26,9 +29,9 @@ static void BLUETOOTH_handler(void)
 	switch(status)
 	{
 		case DISCONNECTED:
-			if(tab[0]=='C'){ //On vérifie si le bluetooth est connecté
+			/*if(tab[0]=='C'){ //On vérifie si le bluetooth est connecté
 				status = CONNECTED; //Si c'est le cas on passe à l'état suivant
-			}
+			}*/
 			break;
 		case CONNECTED:
 			// Si il s'agit d'une demande d'arrêt d'urgence
@@ -57,6 +60,10 @@ static void BLUETOOTH_handler(void)
 
 bluetooth_status BLUETOOTH_get_status(void){
 	return status;
+}
+
+void BLUETOOTH_set_status(bluetooth_status new_status){
+	status = new_status;
 }
 
 bool_e BLUETOOTH_get_flag(void)
