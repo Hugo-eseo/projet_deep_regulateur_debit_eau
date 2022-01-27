@@ -1,11 +1,25 @@
 /**
-  ******************************************************************************
-  * @file    main.c
-  * @author  Nirgal
-  * @date    03-July-2019
-  * @brief   Default main function.
-  ******************************************************************************
+	******************************************************************************
+	* @file    main.c
+	* @author  Nirgal edited by Hugo BOUY & Tristan CARO
+	* @date    03-July-2019 last modification 26-jan-2022
+	* @brief   Default main function.
+	******************************************************************************
 */
+
+
+/**
+	******************************************************************************
+	* Regucolo - Projet DEEP S5 2021-2022
+	* Groupe : BOUY Hugo et CARO Tristan
+	*
+	* Regucolo est un régulateur de débit d'eau commandable via une application
+	* android. Il permet de monitorer en temps réel la consommation d'eau
+	* de l'utilisateur
+	* ****************************************************************************
+ */
+
+// Bibliothèques externes
 #include "stm32f1xx_hal.h"
 #include "stm32f1_uart.h"
 #include "stm32f1_sys.h"
@@ -19,13 +33,15 @@
 #include "debimetre.h"
 #include "bluetooth.h"
 
-// Timers pour la lecture du bonton et la mise à jour de l'écran
+// Timers pour la lecture du bouton/connexion bluetooth et la mise à jour de l'écran
+// respectivements de 10 et de 500ms
 #define TIMER_AMOUT 2
-// {BUTTON_READING, TFT_UPDATE}
+
 static volatile bool_e flags[TIMER_AMOUT] = {FALSE, FALSE};
 static volatile uint16_t timer[TIMER_AMOUT] = {0, 0};
 static const uint16_t TIMER_VALUE[TIMER_AMOUT] = {10, 500};
 
+// Boolean mis à jour par la fonction main et utilisé dans la machine à état
 static bool_e button_pressed = FALSE;
 
 // Machine à état principale
@@ -40,7 +56,13 @@ typedef enum
 	STOP_DELIVERY
 }state_machine_id;
 
+
+/*
+ * @brief Machine à état appellée à chaque tour de boucle de la tâche de fond
+ * Gère le système dans sa globalité. Voir livrable du projet pour une meilleure lisibilité
+ */
 void state_machine(void){
+	// On utilise une détection de première entrée dans l'état
 	static state_machine_id state = INIT;
 	static state_machine_id previous_state;
 
@@ -62,11 +84,11 @@ void state_machine(void){
 			break;
 		// Si la première initialisation a eu lieu mais que l'utilisateur s'est deconnecté depuis
 		case WAITING_CONNEXION:
-			// Si il se connecte
+			// S'il se connecte
 			if(BLUETOOTH_get_status()==CONNECTED){
 				state = WAITING_INSTRUCTIONS;
 			}
-			// Si il appuie sur le boutton (déclanchement manuel)
+			// S'il appuie sur le boutton (déclanchement manuel)
 			else if(button_pressed){
 				state = MANUAL_DELIVERY;
 			}
@@ -74,7 +96,7 @@ void state_machine(void){
 			break;
 		// Si l'utilisateur est connecté
 		case WAITING_INSTRUCTIONS:
-			// Si il demande un 'delivery' (activation de la vanne)
+			// Si il demande un 'delivery' (ouverture de la vanne)
 			if(BLUETOOTH_get_flag()){
 				state = DELIVERY;
 			}
@@ -103,7 +125,7 @@ void state_machine(void){
 			}
 			previous_state = DELIVERY;
 			break;
-		// Si il ouvre la vanne manuellement avec le bouton (uniquement si il n'est pas connecté en bluetooth)
+		// S'il ouvre la vanne manuellement avec le bouton (uniquement s'il n'est pas connecté en bluetooth)
 		case MANUAL_DELIVERY:
 			// Première entrée
 			if(state != previous_state){
@@ -123,7 +145,7 @@ void state_machine(void){
 			VANNE_close();
 			BLUETOOTH_set_flag(FALSE);
 			// On l'indique dans la console
-			TFT_add_console("Arret d'urgence par l'utilisateur");
+			TFT_add_console("Arret manuel par l'utilisateur");
 			// On revient à l'état de départ
 			state = (previous_state == MANUAL_DELIVERY?WAITING_CONNEXION:WAITING_INSTRUCTIONS);
 			previous_state = EMERGENCY_STOP;
@@ -142,6 +164,10 @@ void state_machine(void){
 	}
 }
 
+/*
+ * @brief Fonction appellée en interruption toutes les milisecondes
+ * Met à jour l'ensemble des timers et lève le flag correspondant si besoin
+ */
 void process_ms(void)
 {
 	for(uint i=0; i<TIMER_AMOUT; i++){
@@ -155,12 +181,9 @@ void process_ms(void)
 	}
 }
 
-void writeLED(bool_e b)
-{
-	HAL_GPIO_WritePin(LED_GREEN_GPIO, LED_GREEN_PIN, b);
-}
-
-//Détecteur d'appui sur un bouton
+/*
+ * @brief Détecte un appui sur le bouton poussoir du PCB
+ */
 bool_e button_press_event(void)
 {
 	static bool_e previous_state = FALSE;
@@ -176,16 +199,10 @@ bool_e button_press_event(void)
 int main(void)
 {
 	//Initialisation de la couche logicielle HAL (Hardware Abstraction Layer)
-	//Cette ligne doit rester la première étape de la fonction main().
  	HAL_Init();
 
 	//Initialisation de l'UART2 à la vitesse de 9600 bauds/secondes (92kbits/s) PA2 : Tx  | PA3 : Rx.
-	//Attention, les pins PA2 et PA3 ne sont pas reliées jusqu'au connecteur de la Nucleo.
-	//Ces broches sont redirigées vers la sonde de débogage, la liaison UART étant ensuite encapsulée sur l'USB vers le PC de développement.
 	UART_init(UART2_ID,9600);
-
-	//"Indique que les printf sortent vers le périphérique UART2."
-	// SYS_set_std_usart(UART2_ID, UART2_ID, UART2_ID);
 
 	//Initialisation du port de la led Verte (carte Nucleo)
 	BSP_GPIO_PinCfg(LED_GREEN_GPIO, LED_GREEN_PIN, GPIO_MODE_OUTPUT_PP,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH);
@@ -221,12 +238,13 @@ int main(void)
 		// Lecture de l'uart
 		BLUETOOTH_get_data();
 
-		// Lecture du boutton toutes les 10ms
+		// Lecture du boutton et de l'état de la connexion bluetooth toutes les 10ms
 		if(flags[0]){
 			// Acquittement du flag
 			flags[0] = FALSE;
 			button_pressed = button_press_event();
 
+			// Mise à jour de l'état de la connexion bluetooth si besoin
 			bluetooth_state = HAL_GPIO_ReadPin(BLUETOOTH_STATE_GPIO, BLUETOOTH_STATE_PIN);
 			if(bluetooth_state != previous_bluetooth_state){
 				if(bluetooth_state){
@@ -245,11 +263,14 @@ int main(void)
 			// Acquittement du flag
 			flags[1] = FALSE;
 
-			// Si le débitmètre est inactif, on set la valeur du débit courant à 0
+			// Si le débitmètre est inactif, on set la valeur du débit courant à 0 (sinon il garderait le
+			// précédent débit détecté)
 			if(!DEBIMETRE_get_flag()){
 				DEBIMETRE_set_flow(0);
 			}
 			TFT_update_info(); // Maj
+			// C'est au débitmètre de relever ce flag avant la prochaine mise à jour de l'écran
+			// pour ne pas être considéré comme inactif
 			DEBIMETRE_set_flag(FALSE);
 		}
 		state_machine();

@@ -106,6 +106,10 @@ static const int16_t TFT_img[] = {
 		0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
 };
 
+/*
+ * @brief Retourne l'image stockée dans ce fichier
+ * @brief int16_t : un pointeur vers le tableau contenant l'image
+ */
 int16_t * TFT_get_image(){
 	return &TFT_img;
 }

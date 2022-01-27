@@ -28,23 +28,27 @@ static void TFT_create_rectangle_line(uint8_t line_number, uint8_t line_amount, 
 
 // Maximum 5 phrases/textes différents par ligne !
 #define MAX_SENTENCE_PER_LINE	5
+// Taille en pixel de l'écran
 #define SCREEN_WIDTH			320
 #define SCREEN_HEIGHT			240
+// Nombre de caractères maximum par 'phrases'
 #define SENTENCE_MAX_LEN		45
+// Taille du logo Regucolo
 #define IMG_WIDTH 				40
 #define IMG_HEIGHT			 	37
+// Police utilisée majoritairement dans toute l'UI
 #define FONT_USED 				&Font_7x10
 
 // 'Phrase'
 typedef struct{
 	uint16_t color; // Couleur
-	uint8_t order; // Ordre d'écriture sur la ligne, comme pour un tableau, démarre à 0 !!
+	uint8_t order; // Ordre d'écriture sur la ligne, comme pour un tableau --> démarre à 0 !!
 	uint16_t spacing; // Espacement sur x avant la phrase
-	uint16_t x_cord; // Emplacement exact de la phrase
+	uint16_t x_cord; // Emplacement exact de la phrase --> calculé par le programme
 	uint16_t size; // Taille du tableau de caractères
 	uint16_t previous_size; // Taille précédente de string en cas d'update
 	bool_e updated; // Si la line doit être mise à jour sur l ecran
-	char string[SENTENCE_MAX_LEN]; // Phrase de maximum 45 caractères
+	char string[SENTENCE_MAX_LEN]; // String de maximum 45 caractères
 }sentence;
 
 // 'Ligne'
@@ -57,11 +61,10 @@ typedef struct{
 	bool_e updated; // Si la line doit être mise à jour sur l ecran
 }line;
 
-// L'écran peut contenir au maximum 24 lignes (calculé en fonction de sa taille : 24 lignes en police minimale
+// L'écran peut contenir au maximum 24 lignes (calculé en fonction de sa taille : 24 lignes en police minimale)
 static line screen_display[24];
 // Dernière ligne crée
 static uint8_t current_line = 0;
-static bool_e line_deleted = FALSE;
 
 /*
  * @brief Renvoie en pixel la taille d'une phrase
@@ -76,7 +79,7 @@ static uint16_t TFT_get_sentence_size(uint8_t line_number, uint8_t sentence_orde
 }
 
 /*
- * @brief Ajoute une ligne dans le stockage de l'écran (attention, cette fonction n'affiche rien !
+ * @brief Ajoute une ligne dans le stockage de l'écran (attention, cette fonction n'affiche rien !)
  * @param *font : Pointer to @ref FontDef_t used font, s'applique à toute la ligne !
  * @param spacing : Espacement AVANT l'écriture du texte (interligne supérieure)
  * @ret Le numéro de la ligne qui devra être utilisé pour 'add_sentence'
@@ -97,7 +100,7 @@ static uint8_t TFT_add_line(FontDef_t *font, uint16_t spacing){
  * @param line_number : numéro de la ligne consernée
  * @param color : couleur du texte souhaitée
  * @param spacing : espacement en x avec la phrase précedente ou le bord de l'éran
- * @param * string[] : tableau de caractères (String) contenant la phrase à écrire
+ * @param string : pointeur vers le premier caractère de la chaine
  * @ret L'ordre de la phrase dans la ligne (de 1 à MAX_SENTENCE_PER_LINE inclus)
  */
 static uint8_t TFT_add_sentence(uint8_t line_number, uint16_t color, uint16_t spacing, char * string){
@@ -117,7 +120,9 @@ static uint8_t TFT_add_sentence(uint8_t line_number, uint16_t color, uint16_t sp
 	sentence_ref->updated = TRUE;
 
 	uint8_t i=0;
+	// Le paramètre string pointe vers l'espace mémoire du premier caractère
 	while(*string){
+		// On navigue dans l'espace mémoire associé au tableau
 		sentence_ref->string[i] = *string++;
 		i++;
 	}
@@ -131,10 +136,10 @@ static uint8_t TFT_add_sentence(uint8_t line_number, uint16_t color, uint16_t sp
 
 /*
  * @brief Modifie une phrase déjà créée et ajuste la disposition des phrases suivantes
- * @param line_number : numéeo de la ligne consernée
+ * @param line_number : numéro de la ligne consernée
  * @param sentence_ordrer : ordre de la phrase concernée
- * @param color : couleur du texte souhaitée
- * @param * string[] : tableau de caractères (String) contenant la phrase à écrire
+ * @param color : nouvelle couleur de texte souhaitée
+ * @param string : pointeur vers le premier caractère de la chaine
  */
 
 static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint16_t color, char * string){
@@ -144,16 +149,19 @@ static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint1
 	sentence_ref->updated = TRUE;
 
 	uint8_t i=0;
+	// Même principe que dans la fonction add_sentence
 	while(*string){
 		sentence_ref->string[i] = *string++;
 		i++;
 	}
 	sentence_ref->size = i;
+	// On supprime les caractères suivants si la phrase précédente était plus longue
 	while(i<sentence_ref->previous_size){
 		sentence_ref->string[i] = 0;
 		i++;
 	}
 
+	// On met à jour toutes les phrases situés après celle modifiée pour supprimer l'espace créé
 	for(uint8_t i=1; i<=line_ref->sentences_amount-sentence_order; i++){
 		sentence_ref = &line_ref->sentences[sentence_order+i];
 		sentence * previous_sentence_ref = &line_ref->sentences[sentence_order+i-1];
@@ -165,7 +173,7 @@ static void TFT_edit_sentence(uint8_t line_number, uint8_t sentence_order, uint1
 
 /*
  * @brief Supprime une phrase d'une ligne et décalle les suivantes
- * @param line_number : numéro de la ligne consernée
+ * @param line_number : numéro de la ligne concernée
  * @param sentence_ordrer : ordre de la phrase concernée
  */
 static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
@@ -174,6 +182,8 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
 
 	uint16_t x = sentence_ref->x_cord - sentence_ref->spacing;
 
+	// On remplace la ligne concernée par la suivante (si il y en a une) et ainsi de suite
+	// On modifie d'abord les coordonnées
 	for(uint8_t i=sentence_order+1; i<line_ref->sentences_amount; i++){
 		sentence_ref = &line_ref->sentences[i];
 		sentence_ref->x_cord = x + sentence_ref->spacing;
@@ -181,6 +191,7 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
 		sentence_ref->updated = TRUE;
 	}
 
+	// Puis l'ordre des phrases
 	for(uint8_t i=sentence_order; i<line_ref->sentences_amount-1; i++){
 		line_ref->sentences[i] = line_ref->sentences[i+1];
 	}
@@ -193,6 +204,7 @@ static void TFT_delete_sentence(uint8_t line_number, uint8_t sentence_order){
  * @brief Supprime tout le contenu de l'écran. ATTENTION : effet immédiat !
  */
 static void TFT_delete_all(void){
+	// RAZ de toutes les lignes et de toutes les phrases
 	for(uint8_t i=0; i<current_line; i++){
 		line * line_ref = &screen_display[i];
 		for(uint8_t j=0; j<line_ref->sentences_amount; j++){
@@ -211,15 +223,19 @@ static void TFT_delete_all(void){
  * @brief Met à jour l'écran (si il y a des mises à jours)
  */
 static void TFT_update_screen(void){
+	// Pour chaque ligne
 	for(uint8_t i=0; i<current_line; i++){
 		line * line_ref = &screen_display[i];
 		uint16_t y = line_ref->y_cord;
+		// Si la ligne entière doit être màj (lors de suppression d'une phrase par exemple)
 		if(line_ref->updated){
 			ILI9341_DrawFilledRectangle(0, y, SCREEN_WIDTH, y+line_ref->font.FontHeight, ILI9341_COLOR_WHITE);
 			line_ref->updated = FALSE;
 		}
+		// Pour chaque phrase sur cette ligne
 		for(uint8_t j=0; j<line_ref->sentences_amount; j++){
 			sentence * sentence_ref = &line_ref->sentences[j];
+			// Si elle doit être màj
 			if(sentence_ref->updated){
 				uint16_t x = sentence_ref->x_cord;
 				if(sentence_ref->size != sentence_ref->previous_size){
@@ -230,11 +246,6 @@ static void TFT_update_screen(void){
 				sentence_ref->updated = FALSE;
 			}
 		}
-	}
-	if(line_deleted){
-		line * line_ref = &screen_display[current_line+1];
-		ILI9341_DrawFilledRectangle(0, line_ref->y_cord, SCREEN_WIDTH, line_ref->y_cord+line_ref->font.FontHeight, ILI9341_COLOR_WHITE);
-		line_ref->updated = FALSE;
 	}
 }
 
@@ -263,6 +274,16 @@ static void TFT_create_rectangle_line(uint8_t line_number, uint8_t line_amount, 
 	ILI9341_DrawFilledRectangle(x0, y1, x1, y1+-width, color);
 }
 
+/*
+ * Toutes les fonctions présentées ci-dessus n'ont pas forcément été utilisées à leur plein
+ * potentiel dans ce projet. Il s'agissait d'un petit challenge de développement pour s'amuser et
+ * concevoir une sorte de 'bibliothèque' pour faciliter l'affichage d'éléments de texte sur l'écran
+ */
+
+
+/*
+ * @brief Affiche l'écran principal du regucolo
+ */
 void TFT_home_screen(){
 	TFT_delete_all();
 
@@ -291,7 +312,7 @@ void TFT_home_screen(){
 	TFT_add_sentence(current_line-1, ILI9341_COLOR_BLACK, 6, "AUCUNE");
 	TFT_create_rectangle_line(4, 4, 3, ILI9341_COLOR_BLUE2, 2, 3, 3);
 
-	//Troisième rectangle d'information
+	//Troisième rectangle d'information (console)
 	TFT_add_sentence(TFT_add_line(FONT_USED, 15), ILI9341_COLOR_MAGENTA, 6, "Console");
 	TFT_add_line(FONT_USED, 7);
 	TFT_add_line(FONT_USED, 3);
@@ -304,6 +325,10 @@ void TFT_home_screen(){
 
 }
 
+/*
+ * @brief Ajoute du texte à la 'console' du regucolo
+ * @param string : pointeur vers le premier caractère de la chaine
+ */
 void TFT_add_console(char * string){
 	static uint8_t command_amount = 0;
 	if(command_amount<4){
@@ -320,6 +345,9 @@ void TFT_add_console(char * string){
 	}
 }
 
+/*
+ * @brief Initialise l'écran et affiche la page de bienvenue
+ */
 void TFT_init(void){
 	// Initialisation de la planche de dessin
 	ILI9341_Init();
@@ -338,7 +366,7 @@ void TFT_init(void){
 }
 
 /*
- * @brief Switch le texte indiquant l'état de la vanne
+ * @brief Met à jour l'état de la vanne sur l'écran TFT
  * @param state : TRUE = OUVERTE, FALSE = FERMEE
  */
 void TFT_set_vanne(bool_e state){
@@ -351,7 +379,7 @@ void TFT_set_vanne(bool_e state){
 }
 
 /*
- * @brief Switch le texte indiquant l'état de la connexion
+ * @brief Met à jour l'état de la connexion bluetooth sur l'écran TFT
  * @param state : TRUE = ON, FALSE = OFF
  */
 void TFT_set_connexion(bool_e state){
@@ -365,9 +393,9 @@ void TFT_set_connexion(bool_e state){
 
 /*
  * @brief Modifie le texte indiquant le type de douche choisie
- * @param state :  200 = DIEUX, 150 = CLASSIQUE, 90 = ECOLOGIQUE, Autre = AUCUNE
+ * @param state :  >=200 DIEUX, 200< CLASSIQUE, 150< ECOLOGIQUE, 0 = AUCUNE
  */
-void TFT_set_shower(uint8_t value){
+void TFT_set_shower(uint32_t value){
 	uint16_t color;
 	char * text;
 	if(value==0){
@@ -390,6 +418,9 @@ void TFT_set_shower(uint8_t value){
 	TFT_update_screen();
 }
 
+/*
+ * @brief Met à jour si besoin le débit d'eau et la quantité d'eau consommée sur l'écran
+ */
 void TFT_update_info(void){
 	// Récupère de débit d'eau courant
 	static uint16_t flow[2] = {0, 1};
