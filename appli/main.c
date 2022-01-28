@@ -58,7 +58,7 @@ typedef enum
 
 
 /*
- * @brief Machine à état appellée à chaque tour de boucle de la tâche de fond
+ * @brief Machine à état appelée à chaque tour de boucle de la tâche de fond
  * Gère le système dans sa globalité. Voir livrable du projet pour une meilleure lisibilité
  */
 void state_machine(void){

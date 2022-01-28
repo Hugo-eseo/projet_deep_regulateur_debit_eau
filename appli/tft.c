@@ -96,7 +96,7 @@ static uint8_t TFT_add_line(FontDef_t *font, uint16_t spacing){
 }
 
 /*
- * @biref Ajoute du texte sur le ligne donnée (attention, cette fonction ne met pas à jours l'écran !)
+ * @biref Ajoute du texte sur la ligne donnée (attention, cette fonction ne met pas à jours l'écran !)
  * @param line_number : numéro de la ligne consernée
  * @param color : couleur du texte souhaitée
  * @param spacing : espacement en x avec la phrase précedente ou le bord de l'éran
@@ -374,7 +374,7 @@ void TFT_set_vanne(bool_e state){
 	char * text = state?"OUVERTE":"FERMEE";
 	TFT_edit_sentence(2, 1, color, &text[0]);
 	text = state?"Ouverture de la vanne":"Fermeture de la vanne";
-	TFT_add_console(text);
+	TFT_add_console(&text[0]);
 	TFT_update_screen();
 }
 
@@ -387,7 +387,7 @@ void TFT_set_connexion(bool_e state){
 	char * text = state?"ON":"OFF";
 	TFT_edit_sentence(3, 1, color, &text[0]);
 	text = state?"Connexion bluetooth etablie":"Perte de la connexion bluetooth";
-	TFT_add_console(text);
+	TFT_add_console(&text[0]);
 	TFT_update_screen();
 }
 

@@ -10,7 +10,7 @@
 #include "stm32f1_gpio.h"
 
 /*
- * @brief Initialise le port lié à la vanne
+ * @brief Initialise la broche lié à la vanne
  */
 void VANNE_init(void){
 	//Initialisation du port de la vanne

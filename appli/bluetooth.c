@@ -70,13 +70,6 @@ void BLUETOOTH_set_flag(bool_e flag)
 	BLUETOOTH_flag = flag;
 }
 
-void BLUETOOTH_send_data(char c)
-{
-	if(status == CONNECTED){
-		UART_putc(UART2_ID, c);
-	}
-}
-
 /*
  * @brief fonction appellée à chaque tour de boucle de la tâche de fond. Vérifie si des données sont arrivées
  * sur l'UART.
